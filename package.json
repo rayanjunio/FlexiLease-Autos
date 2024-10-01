@@ -7,8 +7,7 @@
     "start": "ts-node src/index.ts",
     "dev": "ts-node-dev --transpile-only src/index.ts",
     "lint": "eslint \"src/**/*.{js,ts}\"",
-    "prettier": "prettier --write \"src/**/*.{js,ts}\"",
-    "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js"
+    "prettier": "prettier --write \"src/**/*.{js,ts}\""
   },
   "dependencies": {
     "express": "^4.19.2",
