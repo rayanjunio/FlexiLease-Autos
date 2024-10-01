@@ -29,7 +29,11 @@ export class CreateCar1727822455547 implements MigrationInterface {
           },
           {
             name: "valuePerDay",
-            type: "json",
+            type: "integer",
+          },
+          {
+            name: 'acessories',
+            type: 'json',
           },
           {
             name: "numberOfPassengers",
