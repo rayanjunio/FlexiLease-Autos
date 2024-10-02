@@ -13,7 +13,7 @@ export class User {
   cpf!: string;
 
   @Column()
-  birth!: number;
+  birth!: Date;
 
   @Column()
   email!: string;

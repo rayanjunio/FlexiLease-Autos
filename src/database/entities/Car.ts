@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Reserve } from "./Reserve";
 
-interface IAcessory {
+export interface IAcessory {
   name: string;
 }
 
@@ -20,7 +20,7 @@ export class Car {
   year!: number;
 
   @Column()
-  valuePerDay!: string;
+  valuePerDay!: number;
 
   @Column("text")
   acessories!: string;
@@ -29,7 +29,7 @@ export class Car {
   numberOfPassengers!: number;
 
   @OneToMany(() => Reserve, (reserve) => reserve.carId)
-  reserve!: Reserve[];
+  reserves!: Reserve[];
 
   getAcessories(): IAcessory[] {
     return JSON.parse(this.acessories);
@@ -37,5 +37,5 @@ export class Car {
 
   setAcessories(acessories: IAcessory[]): void {
     this.acessories = JSON.stringify(acessories);
-  } 
+  }
 }

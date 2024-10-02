@@ -20,11 +20,11 @@ export class CreateReserve1727824045415 implements MigrationInterface {
           },
           {
             name: "startDate",
-            type: "varchar",
+            type: "date",
           },
           {
             name: "endDate",
-            type: "varchar",
+            type: "date",
           },
           {
             name: "finalValue",

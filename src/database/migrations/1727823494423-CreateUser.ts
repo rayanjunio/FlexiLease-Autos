@@ -26,7 +26,7 @@ export class CreateUser1727823494423 implements MigrationInterface {
           },
           {
             name: "birth",
-            type: "integer",
+            type: "date",
           },
           {
             name: "email",
@@ -37,7 +37,6 @@ export class CreateUser1727823494423 implements MigrationInterface {
           {
             name: "password",
             type: "varchar",
-            length: "25",
           },
           {
             name: "qualified",

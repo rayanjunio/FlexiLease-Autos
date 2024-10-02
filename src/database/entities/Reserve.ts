@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { User } from "./User";
 import { Car } from "./Car";
 
@@ -8,17 +14,19 @@ export class Reserve {
   id!: number;
 
   @Column()
-  startDate!: string;
+  startDate!: Date;
 
   @Column()
-  endDate!: string;
+  endDate!: Date;
 
   @Column()
   finalValue!: number;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.reserves)
+  @JoinColumn({ name: "userId" })
   userId!: number;
 
-  @ManyToOne(() => Car, (car) => car.id)
+  @ManyToOne(() => Car, (car) => car.reserves)
+  @JoinColumn({ name: "carId" })
   carId!: number;
 }
