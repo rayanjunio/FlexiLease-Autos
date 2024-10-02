@@ -49,7 +49,7 @@ export class CreateUser1727823494423 implements MigrationInterface {
             length: "8",
           },
           {
-            name: "neighbordhood",
+            name: "neighborhood",
             type: "varchar",
             length: "100",
           },

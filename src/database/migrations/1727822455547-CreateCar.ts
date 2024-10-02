@@ -32,8 +32,8 @@ export class CreateCar1727822455547 implements MigrationInterface {
             type: "integer",
           },
           {
-            name: 'acessories',
-            type: 'json',
+            name: "acessories",
+            type: "json",
           },
           {
             name: "numberOfPassengers",
