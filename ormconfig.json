@@ -1,7 +1,9 @@
 {
     "type": "sqlite",
     "database": "src/database/db.sqlite",
-    "entities": [],
+    "entities": [
+        "src/database/entities/*.ts"
+    ],
     "migrations": [
         "src/database/migrations/*.ts"
     ],
