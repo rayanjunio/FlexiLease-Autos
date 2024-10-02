@@ -22,12 +22,20 @@ export class Car {
   @Column()
   valuePerDay!: string;
 
-  @Column("json")
-  acessories!: IAcessory[];
+  @Column("text")
+  acessories!: string;
 
   @Column()
   numberOfPassengers!: number;
 
   @OneToMany(() => Reserve, (reserve) => reserve.carId)
   reserve!: Reserve[];
+
+  getAcessories(): IAcessory[] {
+    return JSON.parse(this.acessories);
+  }
+
+  setAcessories(acessories: IAcessory[]): void {
+    this.acessories = JSON.stringify(acessories);
+  } 
 }
