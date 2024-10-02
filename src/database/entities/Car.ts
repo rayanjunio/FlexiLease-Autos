@@ -1,7 +1,8 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Reserve } from "./Reserve";
+import { ValidationError } from "../../api/errors/ValidationError";
 
-export interface IAcessory {
+export interface IAccessory {
   name: string;
 }
 
@@ -23,7 +24,7 @@ export class Car {
   valuePerDay!: number;
 
   @Column("text")
-  acessories!: string;
+  accessories!: string;
 
   @Column()
   numberOfPassengers!: number;
@@ -31,11 +32,34 @@ export class Car {
   @OneToMany(() => Reserve, (reserve) => reserve.carId)
   reserves!: Reserve[];
 
-  getAcessories(): IAcessory[] {
-    return JSON.parse(this.acessories);
+  getAcessories(): IAccessory[] {
+    return JSON.parse(this.accessories);
   }
 
-  setAcessories(acessories: IAcessory[]): void {
-    this.acessories = JSON.stringify(acessories);
+  setAccessories(accessories: IAccessory[]): void {
+    this.accessories = JSON.stringify(accessories);
+  }
+
+  public hasAccessory(accessoryName: string): boolean {
+    const accessoriesArray = this.getAcessories();
+    return accessoriesArray.some((acessory) => acessory.name === accessoryName);
+  }
+
+  public removeAccessory(accessoryName: string): void {
+    const accessoriesArray = this.getAcessories();
+    const updatedAccessories = accessoriesArray.filter(
+      (acessory) => acessory.name !== accessoryName,
+    );
+    this.setAccessories(updatedAccessories);
+  }
+
+  public addAccessory(newAccessory: IAccessory): void {
+    const accessoriesArray = this.getAcessories();
+    if (this.hasAccessory(newAccessory.name)) {
+      const message = `Accessory ${newAccessory.name} already exists.`;
+      throw new ValidationError(400, "Bad Request", message);
+    }
+    accessoriesArray.push(newAccessory);
+    this.setAccessories(accessoriesArray);
   }
 }
