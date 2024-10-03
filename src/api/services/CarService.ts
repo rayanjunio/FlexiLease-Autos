@@ -1,18 +1,34 @@
 import { Repository } from "typeorm";
-import { Car, IAccessory } from "../../database/entities/Car";
+import { Car } from "../../database/entities/Car";
 import connection from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
+import { Accessory } from "../../database/entities/Accessory";
+import { AccessoryService } from "./AccessoryService";
+
+interface CarResponse {
+  id: number;
+  model: string;
+  color: string;
+  year: number;
+  valuePerDay: number;
+  accessories: { name: string }[];
+  numberOfPassengers: number;
+}
 
 export class CarService {
   private carRepository!: Repository<Car>;
+  private accessoryService: AccessoryService;
+  private accessoryRepository!: Repository<Accessory>;
 
   constructor() {
     this.initializeRepository();
+    this.accessoryService = new AccessoryService();
   }
 
   private async initializeRepository() {
     const connect = await connection();
     this.carRepository = connect.getRepository(Car);
+    this.accessoryRepository = connect.getRepository(Accessory);
   }
 
   async createCar(
@@ -20,17 +36,17 @@ export class CarService {
     color: string,
     year: number,
     valuePerDay: number,
-    accessories: IAccessory[],
+    accessories: Accessory[],
     numberOfPassengers: number,
   ): Promise<Car> {
-    const hasAccessories = accessories.length > 0 ? true : false;
+    const hasAccessories = accessories.length > 0;
 
     if (!hasAccessories) {
       const message = "User needs at least one accessory.";
       throw new ValidationError(400, "Bad Request", message);
     }
 
-    const validYear = year > 1950 && year < 2023 ? true : false;
+    const validYear = year > 1950 && year < 2023;
 
     if (!validYear) {
       const message = "The car year must be between 1950 and 2023";
@@ -38,8 +54,11 @@ export class CarService {
     }
 
     if (this.hasDuplicates(accessories)) {
-      const message = "Not allowed duplicated accessories";
-      throw new ValidationError(404, "Bad Request", message);
+      throw new ValidationError(
+        400,
+        "Bad Request",
+        "Not allowed duplicated accessories",
+      );
     }
 
     const newCar = new Car();
@@ -47,14 +66,26 @@ export class CarService {
     newCar.color = color;
     newCar.year = year;
     newCar.valuePerDay = valuePerDay;
-    newCar.setAccessories(accessories);
     newCar.numberOfPassengers = numberOfPassengers;
+
+    newCar.accessories = await Promise.all(
+      accessories.map(async (accessoryData) => {
+        const accessory = new Accessory();
+        accessory.name = accessoryData.name;
+        accessory.car = newCar;
+        return await this.accessoryService.createAccessory(accessory.name);
+      }),
+    );
 
     return await this.carRepository.save(newCar);
   }
 
-  public async getAllCars(parameters: Partial<Car>): Promise<Car[]> {
-    const query = this.carRepository.createQueryBuilder("car");
+  public async getAllCars(
+    parameters: Partial<Car>,
+  ): Promise<Car[] | undefined> {
+    const query = this.carRepository
+      .createQueryBuilder("car")
+      .leftJoinAndSelect("car.accessories", "accessory");
 
     for (const parameter of Object.keys(parameters) as (keyof Partial<Car>)[]) {
       if (parameters[parameter] !== undefined) {
@@ -63,21 +94,31 @@ export class CarService {
         });
       }
     }
-    const result = await query.getMany();
-    return result;
+    return await query.getMany();
   }
 
-  public async getCarById(id: number): Promise<Car | null> {
-    const car = await this.carRepository.findOne({ where: { id } });
+  public async getCarById(id: number): Promise<Car | undefined> {
+    const car = await this.carRepository.findOne({
+      where: { id },
+      relations: ["accessories"],
+    });
+
     if (!car) {
       const message = "This car does not exist";
       throw new ValidationError(404, "Not Found", message);
     }
+
     return car;
   }
 
-  public async updateCar(id: number, carData: Partial<Car>): Promise<Car> {
-    const car = await this.carRepository.findOne({ where: { id } });
+  public async updateCar(
+    id: number,
+    carData: Partial<Car>,
+  ): Promise<Car | undefined> {
+    const car = await this.carRepository.findOne({
+      where: { id },
+      relations: ["accessories"],
+    });
 
     if (!car) {
       const message = "This car does not exist";
@@ -86,69 +127,115 @@ export class CarService {
 
     if (carData.model) car.model = carData.model;
     if (carData.color) car.color = carData.color;
-    if (carData.year) {
-      const validYear =
-        carData.year > 1950 && carData.year < 2023 ? true : false;
 
-      if (!validYear) {
+    if (carData.year) {
+      if (carData.year <= 1950 || carData.year >= 2023) {
         const message = "The car year must be between 1950 and 2023";
         throw new ValidationError(400, "Bad Request", message);
       }
-
       car.year = carData.year;
     }
+
     if (carData.valuePerDay) car.valuePerDay = carData.valuePerDay;
 
     if (Array.isArray(carData.accessories)) {
-      if (this.hasDuplicates(carData.accessories)) {
-        const message = "Not allowed duplicated accessories";
-        throw new ValidationError(400, "Bad Request", message);
+      const existingAccessoryIds = car.accessories.map(
+        (accessory) => accessory.id,
+      );
+      const newAccessories = carData.accessories.filter(
+        (accessory) => !existingAccessoryIds.includes(accessory.id),
+      );
+
+      for (const accessoryData of newAccessories) {
+        const accessory = await this.accessoryService.createAccessory(
+          accessoryData.name,
+        );
+        car.accessories.push(accessory);
       }
 
-      car.setAccessories(carData.accessories);
+      const accessoriesToRemove = existingAccessoryIds.filter(
+        (id) => !carData.accessories?.some((a) => a.id === id),
+      );
+
+      car.accessories = car.accessories.filter(
+        (accessory) => !accessoriesToRemove.includes(accessory.id),
+      );
     }
 
     if (carData.numberOfPassengers) {
       car.numberOfPassengers = carData.numberOfPassengers;
     }
+
     return await this.carRepository.save(car);
   }
 
-  public async updateAccessory(
-    id: number,
-    nameAccessory: string,
-  ): Promise<Car> {
-    const car = await this.carRepository.findOne({ where: { id } });
+  async updateAccessory(
+    carId: number,
+    accessoryData: { name: string },
+  ): Promise<CarResponse> {
+    const car = await this.carRepository.findOne({
+      where: { id: carId },
+      relations: ["accessories"],
+    });
 
     if (!car) {
       const message = "This car does not exist";
       throw new ValidationError(404, "Not Found", message);
     }
 
-    if (car.hasAccessory(nameAccessory)) {
-      car.removeAccessory(nameAccessory);
-      return await this.carRepository.save(car);
+    const existingAccessory = car.accessories.find(
+      (a) => a.name === accessoryData.name,
+    );
+
+    if (existingAccessory) {
+      await this.accessoryRepository.delete(existingAccessory.id);
+      car.accessories = car.accessories.filter(
+        (accessory) => accessory !== existingAccessory,
+      );
+    } else {
+      const newAccessory = new Accessory();
+      newAccessory.name = accessoryData.name;
+      newAccessory.car = car;
+
+      await this.accessoryRepository.save(newAccessory);
+      car.accessories.push(newAccessory);
     }
 
-    const newAccessory: IAccessory = { name: nameAccessory };
-    car.addAccessory(newAccessory);
+    const updatedCar = await this.carRepository.save(car);
 
-    return await this.carRepository.save(car);
+    return {
+      id: updatedCar.id,
+      model: updatedCar.model,
+      color: updatedCar.color,
+      year: updatedCar.year,
+      valuePerDay: updatedCar.valuePerDay,
+      accessories: updatedCar.accessories.map((accessory) => ({
+        name: accessory.name,
+      })),
+      numberOfPassengers: updatedCar.numberOfPassengers,
+    };
   }
 
   public async deleteCar(id: number) {
-    const car = await this.carRepository.findOne({ where: { id } });
+    const car = await this.carRepository.findOne({
+      where: { id },
+      relations: ["accessories"],
+    });
 
     if (!car) {
       const message = "This car does not exist";
       throw new ValidationError(404, "Not Found", message);
     }
 
-    await this.carRepository.delete(id);
+    await this.carRepository.remove(car);
   }
 
-  private hasDuplicates(accessoriesArray: IAccessory[]): boolean {
-    const accessoryName = accessoriesArray.map((accessory) => accessory.name);
-    return new Set(accessoryName).size !== accessoriesArray.length;
+  private hasDuplicates(accessoriesArray?: Accessory[]): boolean {
+    if (!Array.isArray(accessoriesArray)) {
+      return false;
+    }
+
+    const accessoryNames = accessoriesArray.map((accessory) => accessory.name);
+    return new Set(accessoryNames).size !== accessoryNames.length;
   }
 }
