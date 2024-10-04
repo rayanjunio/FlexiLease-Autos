@@ -2,11 +2,12 @@ import "reflect-metadata";
 import express from "express";
 import connection from "./database/connection";
 import carRoutes from "./routes/carRoutes";
+import userRoutes from "./routes/userRoutes";
 
 const app = express();
 app.use(express.json());
 
-app.use("/v1", carRoutes);
+app.use("/v1", carRoutes, userRoutes);
 
 async function startServer() {
   try {
