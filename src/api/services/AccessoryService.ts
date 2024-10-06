@@ -1,6 +1,6 @@
 import { Repository } from "typeorm";
 import { Accessory } from "../../database/entities/Accessory";
-import connection from "../../database/connection";
+import { getConnection } from "../../database/connection";
 
 export class AccessoryService {
   private accessoryRepository!: Repository<Accessory>;
@@ -10,7 +10,7 @@ export class AccessoryService {
   }
 
   private async initializeRepository() {
-    const connect = await connection();
+    const connect = await getConnection();
     this.accessoryRepository = connect.getRepository(Accessory);
   }
 
