@@ -1,0 +1,46 @@
+import { Repository } from "typeorm";
+import { User } from "../../database/entities/User";
+import { getConnection } from "../../database/connection";
+import { ValidationError } from "../errors/ValidationError";
+import jwt from "jsonwebtoken";
+
+export class AuthService {
+  private userRepository!: Repository<User>;
+
+  constructor() {
+    this.initializeRepository();
+  }
+
+  private async initializeRepository() {
+    const connect = await getConnection();
+    this.userRepository = connect.getRepository(User);
+  }
+
+  async createAuth(email: string, password: string): Promise<string> {
+    const regexEmail = new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i);
+
+    if (!regexEmail.test(email)) {
+      throw new ValidationError(400, "Bad Request", "Typed email is not valid");
+    }
+
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user || user.password !== password) {
+      throw new ValidationError(
+        400,
+        "Bad Request",
+        "Typed email/password is not valid",
+      );
+    }
+
+    const token = jwt.sign(
+      { id: user.id },
+      "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+      {
+        expiresIn: "12h",
+      },
+    );
+
+    return token;
+  }
+}
