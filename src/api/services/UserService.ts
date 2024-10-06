@@ -1,9 +1,10 @@
 import { Repository } from "typeorm";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
 import { User } from "../../database/entities/User";
-import connection from "../../database/connection";
+import { getConnection } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import { consumeApi } from "../utils/apiConsumer";
+import { Reserve } from "../../database/entities/Reserve";
 
 interface UserResponse {
   id: number;
@@ -22,14 +23,16 @@ interface UserResponse {
 
 export class UserService {
   private userRepository!: Repository<User>;
+  private reserveRepository!: Repository<Reserve>;
 
   constructor() {
     this.initializeRepository();
   }
 
   private async initializeRepository() {
-    const connect = await connection();
+    const connect = await getConnection();
     this.userRepository = connect.getRepository(User);
+    this.reserveRepository = connect.getRepository(Reserve);
   }
 
   async createUser(
@@ -125,9 +128,18 @@ export class UserService {
     return formattedUser;
   }
 
-  public async getUserById(id: number): Promise<UserResponse> {
+  public async getUserById(
+    id: number,
+    authenticatedUserId: number,
+  ): Promise<UserResponse> {
+    if (id !== authenticatedUserId) {
+      const message =
+        "You are not authorized to access this user's information";
+      throw new ValidationError(403, "Forbidden", message);
+    }
+
     const user = await this.userRepository.findOne({ where: { id } });
-    
+
     if (!user) {
       const message = "This user does not exist";
       throw new ValidationError(404, "Not Found", message);
@@ -151,92 +163,95 @@ export class UserService {
     return formattedUser;
   }
 
-  public async updateUser(id: number, userData: Partial<User>): Promise<UserResponse> {
+  public async updateUser(
+    id: number,
+    userData: Partial<User>,
+  ): Promise<UserResponse> {
     const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
-        const message = "This user does not exist";
-        throw new ValidationError(404, "Not Found", message);
+      const message = "This user does not exist";
+      throw new ValidationError(404, "Not Found", message);
     }
 
     if (userData.cpf) {
-        if (!cpfValidator.isValid(userData.cpf)) {
-            const message = "Typed CPF is invalid.";
-            throw new ValidationError(400, "Bad Request", message);
-        }
+      if (!cpfValidator.isValid(userData.cpf)) {
+        const message = "Typed CPF is invalid.";
+        throw new ValidationError(400, "Bad Request", message);
+      }
 
-        const cpfExists = await this.userRepository.findOne({
-            where: { cpf: userData.cpf },
-        });
+      const cpfExists = await this.userRepository.findOne({
+        where: { cpf: userData.cpf },
+      });
 
-        if (cpfExists && cpfExists.id !== user.id) {
-            const message = "Typed CPF already is registered.";
-            throw new ValidationError(400, "Bad Request", message);
-        }
-        user.cpf = userData.cpf;
+      if (cpfExists && cpfExists.id !== user.id) {
+        const message = "Typed CPF already is registered.";
+        throw new ValidationError(400, "Bad Request", message);
+      }
+      user.cpf = userData.cpf;
     }
 
     if (userData.email) {
-        const regexEmail = new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i);
+      const regexEmail = new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i);
 
-        let matchEmail = regexEmail.test(userData.email);
+      let matchEmail = regexEmail.test(userData.email);
 
-        if (!matchEmail) {
-            const message = "Typed email is not valid";
-            throw new ValidationError(400, "Bad Request", message);
-        }
+      if (!matchEmail) {
+        const message = "Typed email is not valid";
+        throw new ValidationError(400, "Bad Request", message);
+      }
 
-        const emailExists = await this.userRepository.findOne({
-            where: { email: userData.email },
-        });
-        if (emailExists && emailExists.id !== user.id) {
-            const message = "Typed email already is registered.";
-            throw new ValidationError(400, "Bad Request", message);
-        }
-        user.email = userData.email;
+      const emailExists = await this.userRepository.findOne({
+        where: { email: userData.email },
+      });
+
+      if (emailExists && emailExists.id !== user.id) {
+        const message = "Typed email already is registered.";
+        throw new ValidationError(400, "Bad Request", message);
+      }
+      user.email = userData.email;
     }
 
     if (userData.cep) {
-        const address = await consumeApi(userData.cep);
+      const address = await consumeApi(userData.cep);
+      const { bairro, logradouro, complemento, localidade, uf } = address;
 
-        const { bairro, logradouro, complemento, localidade, uf } = address;
-
-        user.neighborhood = bairro;
-        user.street = logradouro;
-        user.complement = complemento;
-        user.city = localidade;
-        user.uf = uf;
+      user.neighborhood = bairro;
+      user.street = logradouro;
+      user.complement = complemento;
+      user.city = localidade;
+      user.uf = uf;
     }
 
     if (userData.birth) {
-        const birthDate = new Date(userData.birth); 
+      const birthDate = new Date(userData.birth);
 
-        if (isNaN(birthDate.getTime())) {
-            const message = "Typed birth date is invalid.";
-            throw new ValidationError(400, "Bad Request", message);
-        }
+      if (isNaN(birthDate.getTime())) {
+        const message = "Typed birth date is invalid.";
+        throw new ValidationError(400, "Bad Request", message);
+      }
 
-        const now = new Date();
-        let age = now.getFullYear() - birthDate.getFullYear();
-        const monthDifference = now.getMonth() - birthDate.getMonth();
+      const now = new Date();
+      let age = now.getFullYear() - birthDate.getFullYear();
+      const monthDifference = now.getMonth() - birthDate.getMonth();
 
-        if (
-            monthDifference < 0 ||
-            (monthDifference === 0 && now.getDate() < birthDate.getDate())
-        ) {
-            age--;
-        }
+      if (
+        monthDifference < 0 ||
+        (monthDifference === 0 && now.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
 
-        user.qualified = age >= 18;
-        user.birth = birthDate;
+      user.qualified = age >= 18;
+      user.birth = birthDate;
     }
 
     if (userData.password) {
-        if (userData.password.length < 6) {
-            const message = "Password must have at least 6 characters";
-            throw new ValidationError(400, "Bad Request", message);
-        }
-        user.password = userData.password;
+      if (userData.password.length < 6) {
+        const message = "Password must have at least 6 characters";
+        throw new ValidationError(400, "Bad Request", message);
+      }
+      user.password = userData.password;
     }
 
     if (userData.name) user.name = userData.name;
@@ -269,6 +284,8 @@ export class UserService {
       throw new ValidationError(404, "Not Found", message);
     }
 
+    await this.reserveRepository.delete({ userId: user });
+
     await this.userRepository.delete(id);
   }
 
@@ -287,10 +304,10 @@ export class UserService {
   }
 
   private formatDate(date: Date): string {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-  
+
     return `${day}/${month}/${year}`;
   }
 }
