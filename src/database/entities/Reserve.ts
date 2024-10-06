@@ -24,9 +24,9 @@ export class Reserve {
 
   @ManyToOne(() => User, (user) => user.reserves)
   @JoinColumn({ name: "userId" })
-  userId!: number;
+  userId!: User;
 
   @ManyToOne(() => Car, (car) => car.reserves)
   @JoinColumn({ name: "carId" })
-  carId!: number;
+  carId!: Car;
 }
