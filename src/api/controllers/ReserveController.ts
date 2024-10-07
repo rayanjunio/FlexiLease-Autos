@@ -95,20 +95,19 @@ export class ReserveController {
           message: "Token not provided.",
         });
       }
-
+  
       const decodedToken = (token: string) => {
         try {
           const decoded = jwt.verify(
             token,
             "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
           );
-
           return decoded;
         } catch (error) {
           return null;
         }
       };
-
+  
       const decoded = decodedToken(token);
       if (!decoded) {
         return res.status(400).json({
@@ -117,10 +116,8 @@ export class ReserveController {
           message: "Invalid Token.",
         });
       }
-
-      const userId =
-        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
-
+  
+      const userId = (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
       if (!userId) {
         return res.status(400).json({
           code: 400,
@@ -128,13 +125,26 @@ export class ReserveController {
           message: "User ID not found in token.",
         });
       }
-
-      const reserves = await this.reserveService.getAllReserves(
+  
+      const limit = parseInt(req.query.limit as string, 10) || 10; 
+      const offset = parseInt(req.query.offset as string, 10) || 0; 
+  
+      const { reserves, total } = await this.reserveService.getAllReserves(
         userId,
         req.query,
+        limit,
+        offset
       );
-
-      res.status(200).json(reserves);
+  
+      const totalPages = Math.ceil(total / limit);
+  
+      res.status(200).json({
+        reserves,   
+        total,  
+        limit, 
+        offset, 
+        offsets: totalPages, 
+      });
     } catch (error: unknown) {
       if (error instanceof ValidationError) {
         return res.status(400).json({
@@ -143,7 +153,7 @@ export class ReserveController {
           message: error.message,
         });
       }
-
+  
       if (error instanceof Error) {
         return res.status(400).json({
           code: 400,
@@ -151,7 +161,7 @@ export class ReserveController {
           message: error.message,
         });
       }
-
+  
       return res.status(500).json({
         code: 500,
         status: "Internal Server Error",

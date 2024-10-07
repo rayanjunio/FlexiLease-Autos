@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { UserController } from "../api/controllers/UserController";
 import { authMiddleware } from "../api/middlewares/authMiddleware";
+import { validateUser } from "../api/middlewares/validateUser";
 
 const router = Router();
 const userController = new UserController();
 
-router.post("/user", userController.createUser.bind(userController));
+router.post("/user", validateUser, userController.createUser.bind(userController));
 
 router.get(
   "/user/:id",
@@ -14,6 +15,7 @@ router.get(
 );
 router.put(
   "/user/:id",
+  validateUser,
   authMiddleware,
   userController.updateUser.bind(userController),
 );

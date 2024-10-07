@@ -1,0 +1,1012 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This REST API manages a vehicle rental dealership, which includes cars, users, reservations, and authentication.",
+    "version": "0.0.1",
+    "title": "FlexiLease Autos",
+    "contact": {
+      "name": "Rayan Junio"
+    }
+  },
+  "host": "localhost:3000",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/car": {
+      "post": {
+        "summary": "Register Car",
+        "description": "This endpoint registers a car",
+        "tags": [
+          "Car"
+        ],
+        "parameters": [
+          {
+            "name": "car",
+            "in": "body",
+            "description": "Car to be registered",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CarRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "registered car",
+            "schema": {
+              "$ref": "#/definitions/CarResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "list from cars",
+        "description": "This endpoint returns a list of cars",
+        "tags": [
+          "Car"
+        ],
+        "responses": {
+          "200": {
+            "description": "a list of cars",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CarResponse"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/car/{id}": {
+      "delete": {
+        "summary": "Delete a car",
+        "description": "This endpoint deletes a car",
+        "tags": [
+          "Car"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "car id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "car deleted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "update a car",
+        "description": "this endpoint updates a car.",
+        "tags": [
+          "Car"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "car id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "car",
+            "in": "body",
+            "description": "new car",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CarRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "updated car",
+            "schema": {
+              "$ref": "#/definitions/CarResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Find a car by id",
+        "description": "This endpoint finds a car by id.",
+        "tags": [
+          "Car"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "car id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "car found",
+            "schema": {
+              "$ref": "#/definitions/CarResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "update an accessory of car",
+        "description": "this endpoint updates an accessory of car.",
+        "tags": [
+          "Car"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "car id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "accessory",
+            "in": "body",
+            "description": "new car",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Accessory"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "updated car",
+            "schema": {
+              "$ref": "#/definitions/CarResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/user": {
+      "post": {
+        "summary": "Register a user",
+        "description": "this endpoint registers a user",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "body",
+            "description": "user to be registered",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User registered.",
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/user/{id}": {
+      "put": {
+        "summary": "update a user",
+        "description": "this endpoint updates a user.",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "user id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "user",
+            "in": "body",
+            "description": "new user",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "updated user",
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user",
+        "description": "This endpoint deletes a user",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "user id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "user deleted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Find a user by id",
+        "description": "This endpoint finds a user by id.",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "car id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user found",
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth": {
+      "post": {
+        "summary": "Authenticate",
+        "description": "this endpoint authenticates a user",
+        "tags": [
+          "Authentication"
+        ],
+        "parameters": [
+          {
+            "name": "login user",
+            "in": "body",
+            "description": "user to be authenticated",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthenticationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token",
+            "schema": {
+              "$ref": "#/definitions/AuthenticationResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/reserve": {
+      "post": {
+        "summary": "register a reserve",
+        "description": "this endpoint registers a reserve",
+        "tags": [
+          "Reserve"
+        ],
+        "parameters": [
+          {
+            "name": "reserve",
+            "in": "body",
+            "description": "reserve to be registered",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ReserveRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Reserve registered",
+            "schema": {
+              "$ref": "#/definitions/ReserveResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List of reservations from authenticated user",
+        "description": "This endpoint returns a list of reservations from authenticated user.",
+        "tags": [
+          "Reserve"
+        ],
+        "responses": {
+          "200": {
+            "description": "reservations found",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ReserveResponse"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/reserve/{id}": {
+      "get": {
+        "summary": "find a reserve by id",
+        "description": "this endpoint finds a reserve by id.",
+        "tags": [
+          "Reserve"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "reserve id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "reserve found",
+            "schema": {
+              "$ref": "#/definitions/ReserveResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "update a reserve",
+        "description": "this endpoint updates a reserve.",
+        "tags": [
+          "Reserve"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "reserve id",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "reserve",
+            "in": "body",
+            "description": "new reserve",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ReserveRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "updated reserve",
+            "schema": {
+              "$ref": "#/definitions/ReserveResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a reserve",
+        "description": "This endpoint deletes a reserve",
+        "tags": [
+          "Reserve"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "reserve id",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "reserve deleted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CarRequest": {
+      "type": "object",
+      "required": [
+        "model",
+        "color",
+        "year",
+        "valuePerDay",
+        "acessories",
+        "numberOfPassengers"
+      ],
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "car model"
+        },
+        "color": {
+          "type": "string",
+          "description": "car color"
+        },
+        "year": {
+          "type": "integer",
+          "description": "car year"
+        },
+        "valuePerDay": {
+          "type": "integer",
+          "description": "car value per day"
+        },
+        "acessories": {
+          "type": "array",
+          "description": "car accessories",
+          "items": {
+            "$ref": "#/definitions/Accessory"
+          }
+        },
+        "numberOfPassengers": {
+          "type": "integer",
+          "description": "number of passengers from car"
+        }
+      }
+    },
+    "CarResponse": {
+      "type": "object",
+      "required": [
+        "id",
+        "model",
+        "color",
+        "year",
+        "valuePerDay",
+        "acessories",
+        "numberOfPassengers"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "car id"
+        },
+        "model": {
+          "type": "string",
+          "description": "car model"
+        },
+        "color": {
+          "type": "string",
+          "description": "car color"
+        },
+        "year": {
+          "type": "integer",
+          "description": "car year"
+        },
+        "valuePerDay": {
+          "type": "integer",
+          "description": "car value per day"
+        },
+        "acessories": {
+          "type": "array",
+          "description": "car accessories",
+          "items": {
+            "$ref": "#/definitions/Accessory"
+          }
+        },
+        "numberOfPassengers": {
+          "type": "integer",
+          "description": "number of passengers from car"
+        }
+      }
+    },
+    "UserRequest": {
+      "type": "object",
+      "required": [
+        "name",
+        "cpf",
+        "birth",
+        "cep",
+        "email",
+        "password"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "cpf": {
+          "type": "string",
+          "description": "user birth"
+        },
+        "birth": {
+          "type": "string",
+          "description": "car year"
+        },
+        "cep": {
+          "type": "string",
+          "description": "user cep"
+        },
+        "email": {
+          "type": "string",
+          "description": "user email"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        }
+      }
+    },
+    "UserResponse": {
+      "type": "object",
+      "required": [
+        "name",
+        "cpf",
+        "birth",
+        "email",
+        "qualified",
+        "cep",
+        "neighborhood",
+        "street",
+        "complement",
+        "city",
+        "uf"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "user id"
+        },
+        "name": {
+          "type": "string",
+          "description": "user name"
+        },
+        "cpf": {
+          "type": "string",
+          "description": "user cpf"
+        },
+        "birth": {
+          "type": "string",
+          "description": "user bith"
+        },
+        "email": {
+          "type": "string",
+          "description": "user email"
+        },
+        "qualified": {
+          "type": "boolean",
+          "description": "user is qualified"
+        },
+        "cep": {
+          "type": "string",
+          "description": "user cep"
+        },
+        "neighborhood": {
+          "type": "string",
+          "description": "user neighborhood"
+        },
+        "street": {
+          "type": "string",
+          "description": "user street"
+        },
+        "complement": {
+          "type": "string",
+          "description": "user address complement"
+        },
+        "city": {
+          "type": "string",
+          "description": "user city"
+        },
+        "uf": {
+          "type": "string",
+          "description": "user uf"
+        }
+      }
+    },
+    "Accessory": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "accessorie name"
+        }
+      }
+    },
+    "ReserveRequest": {
+      "type": "object",
+      "required": [
+        "startDate",
+        "endDate",
+        "carId"
+      ],
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "description": "start date reservation"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "end date reservation"
+        },
+        "carId": {
+          "type": "integer",
+          "description": "car Id reservation"
+        }
+      }
+    },
+    "ReserveResponse": {
+      "type": "object",
+      "required": [
+        "id",
+        "startDate",
+        "endDate",
+        "finalValue",
+        "userId",
+        "carId"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "reserve id"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "start date reservation"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "end date reservation"
+        },
+        "finalValue": {
+          "type": "number",
+          "description": "final value reservation"
+        },
+        "carId": {
+          "type": "integer",
+          "description": "car Id reservation"
+        },
+        "userId": {
+          "type": "integer",
+          "description": "user Id reservation"
+        }
+      }
+    },
+    "AuthenticationRequest": {
+      "type": "object",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "user email"
+        },
+        "password": {
+          "type": "string",
+          "description": "user password"
+        }
+      }
+    },
+    "AuthenticationResponse": {
+      "type": "object",
+      "required": [
+        "accessToken"
+      ],
+      "properties": {
+        "accessToken": {
+          "type": "string",
+          "description": "user token"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "required": [
+        "code",
+        "status",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "error code"
+        },
+        "status": {
+          "type": "string",
+          "description": "error status"
+        },
+        "message": {
+          "type": "string",
+          "description": "string"
+        }
+      }
+    }
+  }
+}

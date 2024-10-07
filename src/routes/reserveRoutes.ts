@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { ReserveController } from "../api/controllers/ReserveController";
 import { authMiddleware } from "../api/middlewares/authMiddleware";
+import { validateReserve } from "../api/middlewares/validateReserve";
 
 const router = Router();
 const reserveController = new ReserveController();
 
 router.post(
   "/reserve",
+  validateReserve,
   authMiddleware,
   reserveController.createReserve.bind(reserveController),
 );
@@ -22,6 +24,7 @@ router.get(
 );
 router.put(
   "/reserve/:id",
+  validateReserve,
   authMiddleware,
   reserveController.updateReserve.bind(reserveController),
 );
