@@ -129,32 +129,40 @@ export class ReserveService {
   public async getAllReserves(
     userId: number,
     parameters: Partial<Reserve>,
-  ): Promise<ReserveResponse[]> {
+    limit: number,
+    offset: number,
+  ): Promise<{ reserves: ReserveResponse[], total: number }> {
     const query = this.reserveRepository
       .createQueryBuilder("reserve")
       .leftJoinAndSelect("reserve.carId", "car")
       .where("reserve.userId = :userId", { userId });
 
-    for (const parameter of Object.keys(
-      parameters,
-    ) as (keyof Partial<Reserve>)[]) {
+    for (const parameter of Object.keys(parameters) as (keyof Partial<Reserve>)[]) {
       if (parameters[parameter] !== undefined) {
         query.andWhere(`reserve.${parameter} = :${parameter}`, {
           [parameter]: parameters[parameter],
         });
       }
     }
-
-    const reserves = await query.getMany();
-
-    return reserves.map((reserve) => ({
-      id: reserve.id,
-      startDate: this.formatDate(reserve.startDate),
-      endDate: this.formatDate(reserve.endDate),
-      finalValue: reserve.finalValue,
-      carId: reserve.carId.id,
-      userId,
-    }));
+  
+    const total = await query.getCount();
+  
+    const reserves = await query
+      .skip(offset)
+      .take(limit)
+      .getMany();
+  
+    return {
+      reserves: reserves.map((reserve) => ({
+        id: reserve.id,
+        startDate: this.formatDate(reserve.startDate),
+        endDate: this.formatDate(reserve.endDate),
+        finalValue: reserve.finalValue,
+        carId: reserve.carId.id,
+        userId,
+      })),
+      total,
+    };
   }
 
   public async getReserveById(
