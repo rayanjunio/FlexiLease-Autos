@@ -1,5 +1,6 @@
 import { Repository } from "typeorm";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
+import bcrypt from 'bcrypt';
 import { User } from "../../database/entities/User";
 import { getConnection } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
@@ -93,13 +94,16 @@ export class UserService {
     const address = await consumeApi(cep);
     const { bairro, logradouro, complemento, localidade, uf } = address;
 
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
     const newUser = this.userRepository.create({
       name,
       cpf,
       birth,
       cep,
       email,
-      password,
+      password: hash,
       qualified,
       neighborhood: bairro,
       street: logradouro,
@@ -251,7 +255,12 @@ export class UserService {
         const message = "Password must have at least 6 characters";
         throw new ValidationError(400, "Bad Request", message);
       }
-      user.password = userData.password;
+      const password = userData.password;
+
+      const salt = bcrypt.genSaltSync(10);
+      const hash = bcrypt.hashSync(password, salt);
+
+      user.password = hash;
     }
 
     if (userData.name) user.name = userData.name;
