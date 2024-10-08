@@ -306,13 +306,6 @@ export class ReserveController {
       }
 
       const { startDate, endDate, carId } = req.body;
-      if (!startDate || !endDate || !carId) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Start date, end date, and car ID are required.",
-        });
-      }
 
       const newReserveData = { startDate, endDate, carId };
 

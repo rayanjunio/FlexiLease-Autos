@@ -28,7 +28,6 @@ router.get(
 
 router.put(
   "/car/:id",
-  validateCar,
   authMiddleware,
   carController.updateCar.bind(carController),
 );
