@@ -147,6 +147,13 @@ export class CarService {
     if (carData.valuePerDay) car.valuePerDay = carData.valuePerDay;
 
     if (Array.isArray(carData.accessories)) {
+       if (this.hasDuplicates(carData.accessories)) {
+        throw new ValidationError(
+          400,
+          "Bad Request",
+          "Not allowed duplicated accessories",
+        );
+      } 
       const existingAccessoryIds = car.accessories.map(
         (accessory) => accessory.id,
       );
