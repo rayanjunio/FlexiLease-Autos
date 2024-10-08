@@ -220,6 +220,7 @@ export class UserService {
       const address = await consumeApi(userData.cep);
       const { bairro, logradouro, complemento, localidade, uf } = address;
 
+      user.cep = userData.cep;
       user.neighborhood = bairro;
       user.street = logradouro;
       user.complement = complemento;
