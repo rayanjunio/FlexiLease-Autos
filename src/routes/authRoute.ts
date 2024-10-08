@@ -5,6 +5,10 @@ import { validateLogin } from "../api/middlewares/validateLogin";
 const router = Router();
 const authController = new AuthController();
 
-router.post("/auth", validateLogin, authController.authenticate.bind(authController));
+router.post(
+  "/auth",
+  validateLogin,
+  authController.authenticate.bind(authController),
+);
 
 export default router;

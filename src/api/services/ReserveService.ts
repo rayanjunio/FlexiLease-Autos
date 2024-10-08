@@ -131,27 +131,26 @@ export class ReserveService {
     parameters: Partial<Reserve>,
     limit: number,
     offset: number,
-  ): Promise<{ reserves: ReserveResponse[], total: number }> {
+  ): Promise<{ reserves: ReserveResponse[]; total: number }> {
     const query = this.reserveRepository
       .createQueryBuilder("reserve")
       .leftJoinAndSelect("reserve.carId", "car")
       .where("reserve.userId = :userId", { userId });
 
-    for (const parameter of Object.keys(parameters) as (keyof Partial<Reserve>)[]) {
+    for (const parameter of Object.keys(
+      parameters,
+    ) as (keyof Partial<Reserve>)[]) {
       if (parameters[parameter] !== undefined) {
         query.andWhere(`reserve.${parameter} = :${parameter}`, {
           [parameter]: parameters[parameter],
         });
       }
     }
-  
+
     const total = await query.getCount();
-  
-    const reserves = await query
-      .skip(offset)
-      .take(limit)
-      .getMany();
-  
+
+    const reserves = await query.skip(offset).take(limit).getMany();
+
     return {
       reserves: reserves.map((reserve) => ({
         id: reserve.id,
@@ -278,11 +277,14 @@ export class ReserveService {
   }
 
   public async deleteReserve(id: number, userId: number) {
-    const reserve = await this.reserveRepository.findOne({ where: { id, userId } });
+    const reserve = await this.reserveRepository.findOne({
+      where: { id, userId },
+    });
 
     if (!reserve) {
-        const message = "This reserve does not exist or does not belong to the user.";
-        throw new ValidationError(404, "Not Found", message);
+      const message =
+        "This reserve does not exist or does not belong to the user.";
+      throw new ValidationError(404, "Not Found", message);
     }
 
     await this.reserveRepository.delete(id);

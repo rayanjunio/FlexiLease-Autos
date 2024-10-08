@@ -2,7 +2,7 @@ import { Router } from "express";
 import { CarController } from "../api/controllers/CarController";
 import { authMiddleware } from "../api/middlewares/authMiddleware";
 import { validateCar } from "../api/middlewares/validateCar";
-import { validateAccessory } from '../api/middlewares/validateAccessorie';
+import { validateAccessory } from "../api/middlewares/validateAccessorie";
 
 const router = Router();
 const carController = new CarController();

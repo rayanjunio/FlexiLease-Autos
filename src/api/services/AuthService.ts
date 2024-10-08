@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import { Repository } from "typeorm";
 import { User } from "../../database/entities/User";
 import { getConnection } from "../../database/connection";
