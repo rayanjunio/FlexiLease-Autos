@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import { Repository } from "typeorm";
 import { User } from "../../database/entities/User";
 import { getConnection } from "../../database/connection";
@@ -25,7 +26,7 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({ where: { email } });
 
-    if (!user || user.password !== password) {
+    if (!user || !bcrypt.compareSync(password, user.password)) {
       throw new ValidationError(
         400,
         "Bad Request",
