@@ -1,6 +1,6 @@
 import { Repository } from "typeorm";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import { User } from "../../database/entities/User";
 import { getConnection } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
@@ -220,6 +220,7 @@ export class UserService {
       const address = await consumeApi(userData.cep);
       const { bairro, logradouro, complemento, localidade, uf } = address;
 
+      user.cep = userData.cep;
       user.neighborhood = bairro;
       user.street = logradouro;
       user.complement = complemento;

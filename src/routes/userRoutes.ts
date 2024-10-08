@@ -6,7 +6,11 @@ import { validateUser } from "../api/middlewares/validateUser";
 const router = Router();
 const userController = new UserController();
 
-router.post("/user", validateUser, userController.createUser.bind(userController));
+router.post(
+  "/user",
+  validateUser,
+  userController.createUser.bind(userController),
+);
 
 router.get(
   "/user/:id",
