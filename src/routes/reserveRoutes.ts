@@ -24,7 +24,6 @@ router.get(
 );
 router.put(
   "/reserve/:id",
-  validateReserve,
   authMiddleware,
   reserveController.updateReserve.bind(reserveController),
 );

@@ -15,7 +15,6 @@ router.get(
 );
 router.put(
   "/user/:id",
-  validateUser,
   authMiddleware,
   userController.updateUser.bind(userController),
 );
