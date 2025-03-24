@@ -1,6 +1,6 @@
 import { Repository } from "typeorm";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import { User } from "../../database/entities/User";
 import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";

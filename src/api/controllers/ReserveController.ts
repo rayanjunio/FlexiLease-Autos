@@ -95,7 +95,7 @@ export class ReserveController {
           message: "Token not provided.",
         });
       }
-  
+
       const decodedToken = (token: string) => {
         try {
           const decoded = jwt.verify(
@@ -107,7 +107,7 @@ export class ReserveController {
           return null;
         }
       };
-  
+
       const decoded = decodedToken(token);
       if (!decoded) {
         return res.status(400).json({
@@ -116,8 +116,9 @@ export class ReserveController {
           message: "Invalid Token.",
         });
       }
-  
-      const userId = (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
+
+      const userId =
+        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
       if (!userId) {
         return res.status(400).json({
           code: 400,
@@ -125,25 +126,25 @@ export class ReserveController {
           message: "User ID not found in token.",
         });
       }
-  
-      const limit = parseInt(req.query.limit as string, 10) || 10; 
-      const offset = parseInt(req.query.offset as string, 10) || 0; 
-  
+
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const offset = parseInt(req.query.offset as string, 10) || 0;
+
       const { reserves, total } = await this.reserveService.getAllReserves(
         userId,
         req.query,
         limit,
-        offset
+        offset,
       );
-  
+
       const totalPages = Math.ceil(total / limit);
-  
+
       res.status(200).json({
-        reserves,   
-        total,  
-        limit, 
-        offset, 
-        offsets: totalPages, 
+        reserves,
+        total,
+        limit,
+        offset,
+        offsets: totalPages,
       });
     } catch (error: unknown) {
       if (error instanceof ValidationError) {
@@ -153,7 +154,7 @@ export class ReserveController {
           message: error.message,
         });
       }
-  
+
       if (error instanceof Error) {
         return res.status(400).json({
           code: 400,
@@ -161,7 +162,7 @@ export class ReserveController {
           message: error.message,
         });
       }
-  
+
       return res.status(500).json({
         code: 500,
         status: "Internal Server Error",
@@ -189,7 +190,7 @@ export class ReserveController {
           const decoded = jwt.verify(
             token,
             "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
-          ) as { id: number }; 
+          ) as { id: number };
           return decoded;
         } catch (error) {
           return null;
@@ -264,7 +265,7 @@ export class ReserveController {
 
   async updateReserve(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id); 
+      const id = parseInt(req.params.id);
 
       const token = req.headers.authorization?.split(" ")[1];
       if (!token) {
@@ -335,7 +336,6 @@ export class ReserveController {
 
       return res.status(200).json(formattedReserve);
     } catch (error: unknown) {
-
       if (error instanceof ValidationError) {
         return res.status(400).json({
           code: error.code,
@@ -362,78 +362,79 @@ export class ReserveController {
 
   async deleteReserve(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id); 
+      const id = parseInt(req.params.id);
       if (isNaN(id)) {
-          return res.status(400).json({
-              code: 400,
-              status: "Bad Request",
-              message: "Invalid reservation ID.",
-          });
+        return res.status(400).json({
+          code: 400,
+          status: "Bad Request",
+          message: "Invalid reservation ID.",
+        });
       }
 
-      const token = req.headers.authorization?.split(" ")[1]; 
+      const token = req.headers.authorization?.split(" ")[1];
       if (!token) {
-          return res.status(401).json({
-              code: 401,
-              status: "Unauthorized",
-              message: "Token is required.",
-          });
+        return res.status(401).json({
+          code: 401,
+          status: "Unauthorized",
+          message: "Token is required.",
+        });
       }
 
       const decodedToken = (token: string) => {
-          try {
-              return jwt.verify(
-                  token,
-                  "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc"
-              ) as { id: number };
-          } catch (error) {
-              return null;
-          }
+        try {
+          return jwt.verify(
+            token,
+            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+          ) as { id: number };
+        } catch (error) {
+          return null;
+        }
       };
 
-      const decoded = decodedToken(token); 
+      const decoded = decodedToken(token);
       if (!decoded) {
-          return res.status(400).json({
-              code: 400,
-              status: "Bad Request",
-              message: "Invalid Token.",
-          });
+        return res.status(400).json({
+          code: 400,
+          status: "Bad Request",
+          message: "Invalid Token.",
+        });
       }
 
-      const userId = (decoded as any).userId || (decoded as any).id || (decoded as any).sub; 
+      const userId =
+        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
       if (!userId) {
-          return res.status(400).json({
-              code: 400,
-              status: "Bad Request",
-              message: "User ID not found in token.",
-          });
+        return res.status(400).json({
+          code: 400,
+          status: "Bad Request",
+          message: "User ID not found in token.",
+        });
       }
 
       await this.reserveService.deleteReserve(id, userId);
 
       return res.status(204).json();
-  } catch (error: unknown) {
+    } catch (error: unknown) {
       if (error instanceof ValidationError) {
-          return res.status(400).json({
-              code: error.code,
-              status: error.status,
-              message: error.message,
-          });
+        return res.status(400).json({
+          code: error.code,
+          status: error.status,
+          message: error.message,
+        });
       }
 
       if (error instanceof Error) {
-          return res.status(400).json({
-              code: 400,
-              status: "Bad Request",
-              message: error.message,
-          });
+        return res.status(400).json({
+          code: 400,
+          status: "Bad Request",
+          message: error.message,
+        });
       }
 
       return res.status(500).json({
-          code: 500,
-          status: "Internal Server Error",
-          message: "An unexpected error occurred",
+        code: 500,
+        status: "Internal Server Error",
+        message: "An unexpected error occurred",
       });
+    }
   }
-}
 }

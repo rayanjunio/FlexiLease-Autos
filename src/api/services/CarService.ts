@@ -87,7 +87,7 @@ export class CarService {
     const query = this.carRepository
       .createQueryBuilder("car")
       .leftJoinAndSelect("car.accessories", "accessory");
-  
+
     for (const parameter of Object.keys(parameters) as (keyof Partial<Car>)[]) {
       if (parameters[parameter] !== undefined) {
         query.andWhere(`car.${parameter} = :${parameter}`, {
@@ -95,12 +95,12 @@ export class CarService {
         });
       }
     }
-  
+
     const [cars, total] = await query
       .skip(offset)
-      .take(limit) 
+      .take(limit)
       .getManyAndCount();
-  
+
     return { cars, total };
   }
 
@@ -146,13 +146,13 @@ export class CarService {
     if (carData.valuePerDay) car.valuePerDay = carData.valuePerDay;
 
     if (Array.isArray(carData.accessories)) {
-       if (this.hasDuplicates(carData.accessories)) {
+      if (this.hasDuplicates(carData.accessories)) {
         throw new ValidationError(
           400,
           "Bad Request",
           "Not allowed duplicated accessories",
         );
-      } 
+      }
       const existingAccessoryIds = car.accessories.map(
         (accessory) => accessory.id,
       );

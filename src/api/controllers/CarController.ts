@@ -63,18 +63,22 @@ export class CarController {
 
   async getAllCars(req: Request, res: Response) {
     try {
-      const limit = parseInt(req.query.limit as string, 10) || 10; 
-      const offset = parseInt(req.query.offset as string, 10) || 0; 
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const offset = parseInt(req.query.offset as string, 10) || 0;
 
-      const { cars, total } = await this.carService.getAllCars(req.query, limit, offset);
-  
+      const { cars, total } = await this.carService.getAllCars(
+        req.query,
+        limit,
+        offset,
+      );
+
       const totalPages = Math.ceil(total / limit);
 
       res.status(200).json({
         car: cars,
         total,
-        limit, 
-        offset, 
+        limit,
+        offset,
         offsets: totalPages,
       });
     } catch (error: unknown) {
@@ -85,7 +89,7 @@ export class CarController {
           message: error.message,
         });
       }
-  
+
       if (error instanceof Error) {
         return res.status(400).json({
           code: 400,
@@ -93,7 +97,7 @@ export class CarController {
           message: error.message,
         });
       }
-  
+
       return res.status(500).json({
         code: 500,
         status: "Internal Server Error",

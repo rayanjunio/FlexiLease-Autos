@@ -11,22 +11,25 @@ const carSchema = Joi.object({
   color: Joi.string().required(),
   year: Joi.number().integer().min(1950).max(2023).required(),
   valuePerDay: Joi.number().positive().required(),
-  accessories: Joi.array()
-    .items(accessorySchema)
-    .min(1)
-    .required(),
+  accessories: Joi.array().items(accessorySchema).min(1).required(),
   numberOfPassengers: Joi.number().integer().positive().required(),
 });
 
-export const validateCar = (req: Request, res: Response, next: NextFunction) => {
-    const { error } = carSchema.validate(req.body);
-    if (error) {
-      const errorMessage = error.details.map(detail => detail.message).join(", ");
-      return res.status(400).json({
-        code: 400,
-        status: "Bad Request",
-        message: errorMessage,
-      });
-    }
-    next();
-  };
+export const validateCar = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { error } = carSchema.validate(req.body);
+  if (error) {
+    const errorMessage = error.details
+      .map((detail) => detail.message)
+      .join(", ");
+    return res.status(400).json({
+      code: 400,
+      status: "Bad Request",
+      message: errorMessage,
+    });
+  }
+  next();
+};
