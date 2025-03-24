@@ -1,6 +1,6 @@
 import { Repository } from "typeorm";
 import { Reserve } from "../../database/entities/Reserve";
-import { getConnection } from "../../database/connection";
+import { AppDataSource } from "../../database/connection";
 import { Car } from "../../database/entities/Car";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
@@ -30,10 +30,9 @@ export class ReserveService {
   }
 
   private async initializeRepository() {
-    const connect = await getConnection();
-    this.reserveRepository = connect.getRepository(Reserve);
-    this.carRepository = connect.getRepository(Car);
-    this.userRepository = connect.getRepository(User);
+    this.reserveRepository = AppDataSource.getRepository(Reserve);
+    this.carRepository = AppDataSource.getRepository(Car);
+    this.userRepository = AppDataSource.getRepository(User);
   }
 
   async createReserve(
@@ -170,7 +169,10 @@ export class ReserveService {
     userId: number,
   ): Promise<ReserveResponse> {
     const reserve = await this.reserveRepository.findOne({
-      where: { id, userId },
+      where: { 
+        id, 
+        userId, 
+      } as any,
       relations: ["userId", "carId"],
     });
 
@@ -197,7 +199,10 @@ export class ReserveService {
     reserveData: Partial<ReserveUpdateRequest>,
   ): Promise<Reserve> {
     const reserve = await this.reserveRepository.findOne({
-      where: { id, userId },
+      where: { 
+        id,
+         userId 
+      } as any,
       relations: ["userId", "carId"],
     });
 
@@ -278,7 +283,7 @@ export class ReserveService {
   }
 
   public async deleteReserve(id: number, userId: number) {
-    const reserve = await this.reserveRepository.findOne({ where: { id, userId } });
+    const reserve = await this.reserveRepository.findOne({ where: { id, userId } as any });
 
     if (!reserve) {
         const message = "This reserve does not exist or does not belong to the user.";

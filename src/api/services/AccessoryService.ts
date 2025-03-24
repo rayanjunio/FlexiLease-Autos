@@ -1,6 +1,6 @@
 import { Repository } from "typeorm";
 import { Accessory } from "../../database/entities/Accessory";
-import { getConnection } from "../../database/connection";
+import { AppDataSource } from "../../database/connection";
 
 export class AccessoryService {
   private accessoryRepository!: Repository<Accessory>;
@@ -10,8 +10,7 @@ export class AccessoryService {
   }
 
   private async initializeRepository() {
-    const connect = await getConnection();
-    this.accessoryRepository = connect.getRepository(Accessory);
+    this.accessoryRepository = AppDataSource.getRepository(Accessory);
   }
 
   async createAccessory(name: string): Promise<Accessory> {
@@ -21,7 +20,7 @@ export class AccessoryService {
     return await this.accessoryRepository.save(accessory);
   }
 
-  async getAccessoryById(id: number): Promise<Accessory | undefined> {
+  async getAccessoryById(id: number): Promise<Accessory | null> {
     return await this.accessoryRepository.findOne({ where: { id } });
   }
 

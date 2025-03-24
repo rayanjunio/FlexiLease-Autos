@@ -2,7 +2,7 @@ import { Repository } from "typeorm";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
 import bcrypt from 'bcrypt';
 import { User } from "../../database/entities/User";
-import { getConnection } from "../../database/connection";
+import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import { consumeApi } from "../utils/apiConsumer";
 import { Reserve } from "../../database/entities/Reserve";
@@ -31,9 +31,8 @@ export class UserService {
   }
 
   private async initializeRepository() {
-    const connect = await getConnection();
-    this.userRepository = connect.getRepository(User);
-    this.reserveRepository = connect.getRepository(Reserve);
+    this.userRepository = AppDataSource.getRepository(User);
+    this.reserveRepository = AppDataSource.getRepository(Reserve);
   }
 
   async createUser(
@@ -220,6 +219,7 @@ export class UserService {
       const address = await consumeApi(userData.cep);
       const { bairro, logradouro, complemento, localidade, uf } = address;
 
+      user.cep = userData.cep;
       user.neighborhood = bairro;
       user.street = logradouro;
       user.complement = complemento;

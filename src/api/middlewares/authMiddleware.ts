@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "../errors/ValidationError";
 import jwt from "jsonwebtoken";
-import { getConnection } from "../../database/connection";
+import { AppDataSource } from "../../database/connection";
 import { User } from "../../database/entities/User";
 
 declare global {
@@ -35,8 +35,7 @@ export const authMiddleware = async (
       "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
     ) as { id: number };
 
-    const connect = await getConnection();
-    const userRepository = connect.getRepository(User);
+    const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({ where: { id: decoded.id } });
 
     if (!user) {
