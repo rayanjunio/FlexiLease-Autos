@@ -1,12 +1,12 @@
-import { createConnection, Connection } from "typeorm";
+import { DataSource } from "typeorm";
+import { Accessory } from "./entities/Accessory";
+import { Car } from "./entities/Car";
+import { Reserve } from "./entities/Reserve";
+import { User } from "./entities/User";
 
-let connection: Connection;
-
-export async function getConnection(): Promise<Connection> {
-  if (!connection) {
-    connection = await createConnection();
-  }
-  return connection;
-}
-
-export default getConnection;
+export const AppDataSource = new DataSource({
+  type: "sqlite",
+  database: "src/database/db.sqlite",
+  entities: [Accessory, Car, Reserve, User],
+  synchronize: false,
+});

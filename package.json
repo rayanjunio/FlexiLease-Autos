@@ -19,7 +19,7 @@
     "reflect-metadata": "^0.1.13",
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.2.29"
+    "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

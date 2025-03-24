@@ -1,6 +1,6 @@
 import { Repository } from "typeorm";
 import { Car } from "../../database/entities/Car";
-import { getConnection } from "../../database/connection";
+import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import { Accessory } from "../../database/entities/Accessory";
 import { AccessoryService } from "./AccessoryService";
@@ -26,9 +26,8 @@ export class CarService {
   }
 
   private async initializeRepository() {
-    const connect = await getConnection();
-    this.carRepository = connect.getRepository(Car);
-    this.accessoryRepository = connect.getRepository(Accessory);
+    this.carRepository = AppDataSource.getRepository(Car);
+    this.accessoryRepository = AppDataSource.getRepository(Accessory);
   }
 
   async createCar(

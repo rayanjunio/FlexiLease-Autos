@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Repository } from "typeorm";
 import { User } from "../../database/entities/User";
-import { getConnection } from "../../database/connection";
+import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import jwt from "jsonwebtoken";
 
@@ -13,8 +13,7 @@ export class AuthService {
   }
 
   private async initializeRepository() {
-    const connect = await getConnection();
-    this.userRepository = connect.getRepository(User);
+    this.userRepository = AppDataSource.getRepository(User);
   }
 
   async createAuth(email: string, password: string): Promise<string> {
