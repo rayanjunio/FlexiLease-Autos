@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import express from "express";
-import { getConnection } from "./database/connection";
+import { AppDataSource } from "./database/connection";
 import carRoutes from "./routes/carRoutes";
 import userRoutes from "./routes/userRoutes";
 import authRoute from "./routes/authRoute";
@@ -14,7 +14,7 @@ app.use("/v1", carRoutes, userRoutes, authRoute, reserveRoutes, documentationRou
 
 async function startServer() {
   try {
-    await getConnection();
+    await AppDataSource.initialize();
     console.log("Connection with database ready!");
 
     app.listen(3000, () => {
