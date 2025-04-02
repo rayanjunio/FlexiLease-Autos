@@ -299,17 +299,20 @@ export class UserService {
   }
 
   private ensureValidDate(birth: string | Date): Date {
-    const date = typeof birth === "string" ? new Date(birth) : birth;
+    if(typeof birth === "string") {
+      const [day, month, year] = birth.split("/").map(Number);
+      return new Date(Date.UTC(year, month-1, day+1));
+    }
 
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
+    if (!(birth instanceof Date) || isNaN(birth.getTime())) {
       throw new ValidationError(
         400,
         "Bad Request",
         "Birth date must be a valid Date object.",
       );
     }
-
-    return date;
+    
+    return birth;
   }
 
   private formatDate(date: Date): string {

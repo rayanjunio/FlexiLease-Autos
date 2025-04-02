@@ -7,7 +7,7 @@ import { User } from "../../database/entities/User";
 declare global {
   namespace Express {
     interface Request {
-      user?: User;
+      userId?: number;
     }
   }
 }
@@ -36,7 +36,10 @@ export const authMiddleware = async (
     ) as { id: number };
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { id: decoded.id } });
+    const user: User | null = await userRepository.findOne({
+      where: { id: decoded.id }, 
+      select: ["id"],
+    });
 
     if (!user) {
       return res.status(401).json({
@@ -46,9 +49,10 @@ export const authMiddleware = async (
       });
     }
 
-    req.user = user;
+    req.userId = user.id;
     next();
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json({
         code: error.code,
