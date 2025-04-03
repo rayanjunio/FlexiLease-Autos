@@ -4,6 +4,7 @@ import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import { Accessory } from "../../database/entities/Accessory";
 import { AccessoryService } from "./AccessoryService";
+import { redisClient } from "../../config/redis";
 
 interface CarResponse {
   id: number;
@@ -105,6 +106,14 @@ export class CarService {
   }
 
   public async getCarById(id: number): Promise<Car | undefined> {
+    const cacheKey = `car:${id}`;
+
+    const cachedCar = await redisClient.get(cacheKey);
+
+    if(cachedCar) {
+      return JSON.parse(cachedCar);
+    }
+
     const car = await this.carRepository.findOne({
       where: { id },
       relations: ["accessories"],
@@ -114,6 +123,8 @@ export class CarService {
       const message = "This car does not exist";
       throw new ValidationError(404, "Not Found", message);
     }
+
+    await redisClient.setEx(cacheKey, 300, JSON.stringify(car));
 
     return car;
   }
@@ -180,6 +191,8 @@ export class CarService {
       car.numberOfPassengers = carData.numberOfPassengers;
     }
 
+    redisClient.del(`car:${id}`);
+
     return await this.carRepository.save(car);
   }
 
@@ -217,6 +230,8 @@ export class CarService {
 
     const updatedCar = await this.carRepository.save(car);
 
+    redisClient.del(`car:${carId}`);
+
     return {
       id: updatedCar.id,
       model: updatedCar.model,
@@ -242,6 +257,8 @@ export class CarService {
     }
 
     await this.carRepository.remove(car);
+
+    redisClient.del(`car:${id}`);
   }
 
   private hasDuplicates(accessoriesArray?: Accessory[]): boolean {
