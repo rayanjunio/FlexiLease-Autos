@@ -5,6 +5,11 @@ import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import jwt from "jsonwebtoken";
 
+interface UserLogin {
+  id: number;
+  password: string;
+}
+
 export class AuthService {
   private userRepository!: Repository<User>;
 
@@ -23,7 +28,12 @@ export class AuthService {
       throw new ValidationError(400, "Bad Request", "Typed email is not valid");
     }
 
-    const user = await this.userRepository.findOne({ where: { email } });
+    let user: UserLogin | null;
+    
+    user = await this.userRepository.findOne({ 
+      where: { email },
+      select: ["id", "password"],
+    });
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       throw new ValidationError(
