@@ -4,6 +4,7 @@ import { User } from "../../database/entities/User";
 import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import jwt from "jsonwebtoken";
+import { config } from '../../config/dotenv';
 
 interface UserLogin {
   id: number;
@@ -45,9 +46,9 @@ export class AuthService {
 
     const token = jwt.sign(
       { id: user.id },
-      "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+      config.JWT_SECRET as string,
       {
-        expiresIn: "12h",
+        expiresIn: config.JWT_EXPIRATION,
       },
     );
 

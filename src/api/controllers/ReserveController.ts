@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { ValidationError } from "../errors/ValidationError";
 import { ReserveService } from "../services/ReserveService";
+import { config } from '../../config/dotenv';
 
 export class ReserveController {
   private reserveService = new ReserveService();
@@ -22,7 +23,7 @@ export class ReserveController {
         try {
           const decoded = jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
           return decoded;
         } catch (error) {
@@ -100,7 +101,7 @@ export class ReserveController {
         try {
           const decoded = jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           );
           return decoded;
         } catch (error) {
@@ -189,7 +190,7 @@ export class ReserveController {
         try {
           const decoded = jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
           return decoded;
         } catch (error) {
@@ -280,7 +281,7 @@ export class ReserveController {
         try {
           return jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
         } catch (error) {
           return null;
@@ -384,7 +385,7 @@ export class ReserveController {
         try {
           return jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
         } catch (error) {
           return null;

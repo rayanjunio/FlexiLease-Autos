@@ -3,6 +3,7 @@ import { ValidationError } from "../errors/ValidationError";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../database/connection";
 import { User } from "../../database/entities/User";
+import { config } from '../../config/dotenv';
 
 declare global {
   namespace Express {
@@ -32,7 +33,7 @@ export const authMiddleware = async (
   try {
     const decoded = jwt.verify(
       token,
-      "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+      config.JWT_SECRET as string,
     ) as { id: number };
 
     const userRepository = AppDataSource.getRepository(User);
