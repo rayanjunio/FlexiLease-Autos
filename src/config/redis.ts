@@ -1,10 +1,11 @@
 import { RedisClientType, createClient } from 'redis';
+import { config } from './dotenv';
 
 let redisClient: RedisClientType;
 
 (async () => {
   redisClient = createClient({
-    url: 'redis://localhost:6379',
+    url: config.REDIS_URL,
   });
 
   redisClient.on('error', (error: any) => console.error(error));

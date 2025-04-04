@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
 import { UserService } from "../services/UserService";
+import { config } from '../../config/dotenv';
 
 export class UserController {
   private userService = new UserService();
@@ -64,7 +65,7 @@ export class UserController {
         try {
           const decoded = jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
           return decoded;
         } catch (error) {
@@ -127,7 +128,7 @@ export class UserController {
         try {
           const decoded = jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
           return decoded;
         } catch (error) {
@@ -209,7 +210,7 @@ export class UserController {
         try {
           const decoded = jwt.verify(
             token,
-            "njnckmlazlnxidih83934g5j90vniejincb89233hjn2ivcieonihyvtzftg9xsinmc",
+            config.JWT_SECRET as string,
           ) as { id: number };
           return decoded;
         } catch (error) {

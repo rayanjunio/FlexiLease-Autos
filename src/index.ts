@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes";
 import authRoute from "./routes/authRoute";
 import reserveRoutes from "./routes/reserveRoutes";
 import documentationRoute from "./routes/documentationRoute";
+import { config } from "./config/dotenv";
 
 const app = express();
 app.use(express.json());
@@ -24,7 +25,7 @@ async function startServer() {
     await AppDataSource.initialize();
     console.log("Connection with database ready!");
 
-    app.listen(3000, () => {
+    app.listen(config.PORT, () => {
       console.log("Server running in port 3000");
     });
   } catch (err) {
