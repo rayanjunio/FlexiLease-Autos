@@ -14,6 +14,7 @@ router.post(
 );
 router.get(
   "/reserve",
+  authMiddleware,
   reserveController.getAllReservesFromUser.bind(reserveController),
 );
 
