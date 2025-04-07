@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
 import { UserService } from "../services/UserService";
-import { config } from '../../config/dotenv';
 
 export class UserController {
   private userService = new UserService();
@@ -51,38 +49,7 @@ export class UserController {
     const id = parseInt(req.params.id);
 
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
-
-      const decodedToken = (token: string) => {
-        try {
-          const decoded = jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-          return decoded;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const authenticatedUserId = decoded.id;
+      const authenticatedUserId: number = req.userId as number;
 
       const user = await this.userService.getUserById(id, authenticatedUserId);
 
@@ -114,38 +81,7 @@ export class UserController {
 
   async updateUser(req: Request, res: Response) {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
-
-      const decodedToken = (token: string) => {
-        try {
-          const decoded = jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-          return decoded;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const authenticatedUserId = decoded.id;
+      const authenticatedUserId: number = req.userId as number;
       const id = parseInt(req.params.id);
 
       if (id !== authenticatedUserId) {
@@ -196,38 +132,7 @@ export class UserController {
 
   async deleteUser(req: Request, res: Response) {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
-
-      const decodedToken = (token: string) => {
-        try {
-          const decoded = jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-          return decoded;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const authenticatedUserId = decoded.id;
+      const authenticatedUserId: number = req.userId as number;
       const id = parseInt(req.params.id);
 
       if (id !== authenticatedUserId) {

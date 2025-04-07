@@ -1,48 +1,15 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import { ValidationError } from "../errors/ValidationError";
 import { ReserveService } from "../services/ReserveService";
-import { config } from '../../config/dotenv';
 
 export class ReserveController {
   private reserveService = new ReserveService();
 
   async createReserve(req: Request, res: Response) {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
+      const userId: number = req.userId as number;
 
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
-
-      const decodedToken = (token: string) => {
-        try {
-          const decoded = jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-          return decoded;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const { startDate, endDate, carId } = req.body;
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const userId = decoded.id;
+      const { startDate, endDate, carId } = req.body;     
 
       const newReserve = await this.reserveService.createReserve(
         startDate,
@@ -88,45 +55,7 @@ export class ReserveController {
 
   async getAllReservesFromUser(req: Request, res: Response) {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token not provided.",
-        });
-      }
-
-      const decodedToken = (token: string) => {
-        try {
-          const decoded = jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          );
-          return decoded;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const userId =
-        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
-      if (!userId) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "User ID not found in token.",
-        });
-      }
+      const userId: number = req.userId as number;
 
       const limit = parseInt(req.query.limit as string, 10) || 10;
       const offset = parseInt(req.query.offset as string, 10) || 0;
@@ -176,39 +105,7 @@ export class ReserveController {
     const id = parseInt(req.params.id);
 
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
-
-      const decodedToken = (token: string) => {
-        try {
-          const decoded = jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-          return decoded;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const userId =
-        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
+      const userId: number = req.userId as number;
 
       if (!userId) {
         return res.status(400).json({
@@ -268,37 +165,8 @@ export class ReserveController {
     try {
       const id = parseInt(req.params.id);
 
-      const token = req.headers.authorization?.split(" ")[1];
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
+      const userId: number = req.userId as number;
 
-      const decodedToken = (token: string) => {
-        try {
-          return jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const userId =
-        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
       if (!userId) {
         return res.status(400).json({
           code: 400,
@@ -372,37 +240,8 @@ export class ReserveController {
         });
       }
 
-      const token = req.headers.authorization?.split(" ")[1];
-      if (!token) {
-        return res.status(401).json({
-          code: 401,
-          status: "Unauthorized",
-          message: "Token is required.",
-        });
-      }
+      const userId: number = req.userId as number;
 
-      const decodedToken = (token: string) => {
-        try {
-          return jwt.verify(
-            token,
-            config.JWT_SECRET as string,
-          ) as { id: number };
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const decoded = decodedToken(token);
-      if (!decoded) {
-        return res.status(400).json({
-          code: 400,
-          status: "Bad Request",
-          message: "Invalid Token.",
-        });
-      }
-
-      const userId =
-        (decoded as any).userId || (decoded as any).id || (decoded as any).sub;
       if (!userId) {
         return res.status(400).json({
           code: 400,
