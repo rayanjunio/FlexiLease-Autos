@@ -228,12 +228,7 @@ export class UserService {
     }
 
     if (userData.birth) {
-      const birthDate = new Date(userData.birth);
-
-      if (isNaN(birthDate.getTime())) {
-        const message = "Typed birth date is invalid.";
-        throw new ValidationError(400, "Bad Request", message);
-      }
+      const birthDate = this.ensureValidDate(userData.birth);
 
       const now = new Date();
       let age = now.getFullYear() - birthDate.getFullYear();
