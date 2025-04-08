@@ -4,6 +4,7 @@ import { AppDataSource } from "../../database/connection";
 import { Car } from "../../database/entities/Car";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
+import { verifyUserCompatibility } from "../utils/authorization";
 
 interface ReserveResponse {
   id: number;
@@ -180,6 +181,8 @@ export class ReserveService {
       throw new ValidationError(404, "Not Found", message);
     }
 
+    verifyUserCompatibility(reserve.userId.id, userId);
+
     const formattedReserve = {
       id: reserve.id,
       startDate: this.formatDate(reserve.startDate),
@@ -213,13 +216,7 @@ export class ReserveService {
       );
     }
 
-    if (reserve.userId.id !== userId) {
-      throw new ValidationError(
-        403,
-        "Forbidden",
-        "Unauthorized: You can only modify your own reservations",
-      );
-    }
+    verifyUserCompatibility(reserve.userId.id, userId);
 
     let carIdToAssign: number = reserve.carId.id;
 
@@ -282,13 +279,20 @@ export class ReserveService {
   }
 
   public async deleteReserve(id: number, userId: number) {
-    const reserve = await this.reserveRepository.findOne({ where: { id, userId } as any });
+    const reserve = await this.reserveRepository.findOne({
+      where: { 
+        id,
+      },
+      relations: ["userId"],
+    });
 
     if (!reserve) {
       const message =
         "This reserve does not exist or does not belong to the user.";
       throw new ValidationError(404, "Not Found", message);
     }
+
+    verifyUserCompatibility(reserve.userId.id, userId);
 
     await this.reserveRepository.delete(id);
   }

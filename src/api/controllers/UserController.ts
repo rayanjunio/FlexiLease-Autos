@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
 import { UserService } from "../services/UserService";
+import { verifyUserCompatibility } from "../utils/authorization";
 
 export class UserController {
   private userService = new UserService();
@@ -46,10 +47,11 @@ export class UserController {
   }
 
   async getUserById(req: Request, res: Response) {
-    const id = parseInt(req.params.id);
-
     try {
+      const id = parseInt(req.params.id);
       const authenticatedUserId: number = req.userId as number;
+
+      verifyUserCompatibility(id, authenticatedUserId);
 
       const user = await this.userService.getUserById(id, authenticatedUserId);
 
@@ -84,13 +86,7 @@ export class UserController {
       const authenticatedUserId: number = req.userId as number;
       const id = parseInt(req.params.id);
 
-      if (id !== authenticatedUserId) {
-        return res.status(403).json({
-          code: 403,
-          status: "Forbidden",
-          message: "You are not authorized to update this user's information.",
-        });
-      }
+      verifyUserCompatibility(id, authenticatedUserId);
 
       const { name, cpf, birth, cep, email, password } = req.body;
 
@@ -135,13 +131,7 @@ export class UserController {
       const authenticatedUserId: number = req.userId as number;
       const id = parseInt(req.params.id);
 
-      if (id !== authenticatedUserId) {
-        return res.status(403).json({
-          code: 403,
-          status: "Forbidden",
-          message: "You are not authorized to delete this user.",
-        });
-      }
+      verifyUserCompatibility(id, authenticatedUserId);
 
       await this.userService.deleteUser(id);
 
