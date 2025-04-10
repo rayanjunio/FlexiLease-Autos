@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { CarController } from "../api/controllers/CarController";
+import { carController } from "../config/instances/carInstances";
 import { authMiddleware } from "../api/middlewares/authMiddleware";
 import { validateCar } from "../api/middlewares/validateCar";
 import { validateAccessory } from "../api/middlewares/validateAccessorie";
 
 const router = Router();
-const carController = new CarController();
 
 router.post(
   "/car",

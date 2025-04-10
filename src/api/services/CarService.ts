@@ -1,6 +1,5 @@
 import { Repository } from "typeorm";
 import { Car } from "../../database/entities/Car";
-import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import { Accessory } from "../../database/entities/Accessory";
 import { AccessoryService } from "./AccessoryService";
@@ -17,19 +16,9 @@ interface CarResponse {
 }
 
 export class CarService {
-  private carRepository!: Repository<Car>;
-  private accessoryService: AccessoryService;
-  private accessoryRepository!: Repository<Accessory>;
-
-  constructor() {
-    this.initializeRepository();
-    this.accessoryService = new AccessoryService();
-  }
-
-  private async initializeRepository() {
-    this.carRepository = AppDataSource.getRepository(Car);
-    this.accessoryRepository = AppDataSource.getRepository(Accessory);
-  }
+  constructor(private carRepository: Repository<Car>,
+    private accessoryService: AccessoryService,
+    private accessoryRepository: Repository<Accessory>) {}
 
   async createCar(
     model: string,
