@@ -1,6 +1,5 @@
 import { Repository } from "typeorm";
 import { Reserve } from "../../database/entities/Reserve";
-import { AppDataSource } from "../../database/connection";
 import { Car } from "../../database/entities/Car";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
@@ -22,19 +21,9 @@ interface ReserveUpdateRequest {
 }
 
 export class ReserveService {
-  private reserveRepository!: Repository<Reserve>;
-  private carRepository!: Repository<Car>;
-  private userRepository!: Repository<User>;
-
-  constructor() {
-    this.initializeRepository();
-  }
-
-  private async initializeRepository() {
-    this.reserveRepository = AppDataSource.getRepository(Reserve);
-    this.carRepository = AppDataSource.getRepository(Car);
-    this.userRepository = AppDataSource.getRepository(User);
-  }
+  constructor(private reserveRepository: Repository<Reserve>,
+    private carRepository: Repository<Car>,
+    private userRepository: Repository<User>) {}
 
   async createReserve(
     startDate: string | Date,

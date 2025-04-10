@@ -2,7 +2,6 @@ import { Repository } from "typeorm";
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
 import bcrypt from "bcrypt";
 import { User } from "../../database/entities/User";
-import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import { consumeApi } from "../utils/apiConsumer";
 import { Reserve } from "../../database/entities/Reserve";
@@ -23,17 +22,9 @@ interface UserResponse {
 }
 
 export class UserService {
-  private userRepository!: Repository<User>;
-  private reserveRepository!: Repository<Reserve>;
-
-  constructor() {
-    this.initializeRepository();
-  }
-
-  private async initializeRepository() {
-    this.userRepository = AppDataSource.getRepository(User);
-    this.reserveRepository = AppDataSource.getRepository(Reserve);
-  }
+  constructor(private userRepository: Repository<User>,
+    private reserveRepository: Repository<Reserve>,
+  ) {}
 
   async createUser(
     name: string,

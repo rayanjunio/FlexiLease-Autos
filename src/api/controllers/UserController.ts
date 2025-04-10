@@ -5,7 +5,7 @@ import { UserService } from "../services/UserService";
 import { verifyUserCompatibility } from "../utils/authorization";
 
 export class UserController {
-  private userService = new UserService();
+  constructor(private userService: UserService){}
 
   async createUser(req: Request, res: Response) {
     try {

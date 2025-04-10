@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { UserController } from "../api/controllers/UserController";
+import { userController } from "../config/instances/userInstances";
 import { authMiddleware } from "../api/middlewares/authMiddleware";
 import { validateUser } from "../api/middlewares/validateUser";
 
 const router = Router();
-const userController = new UserController();
 
 router.post(
   "/user",

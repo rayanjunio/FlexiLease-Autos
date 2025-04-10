@@ -4,7 +4,7 @@ import { ValidationError } from "../errors/ValidationError";
 import { Car } from "../../database/entities/Car";
 
 export class CarController {
-  private carService = new CarService();
+  constructor(private carService: CarService) {}
 
   async createCar(req: Request, res: Response) {
     try {
