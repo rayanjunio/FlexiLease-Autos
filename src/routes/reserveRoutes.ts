@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { ReserveController } from "../api/controllers/ReserveController";
+import { reserveController } from "../config/instances/reserveInstance";
 import { authMiddleware } from "../api/middlewares/authMiddleware";
 import { validateReserve } from "../api/middlewares/validateReserve";
 
 const router = Router();
-const reserveController = new ReserveController();
 
 router.post(
   "/reserve",

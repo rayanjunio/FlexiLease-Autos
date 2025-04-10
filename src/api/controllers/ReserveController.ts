@@ -3,7 +3,7 @@ import { ValidationError } from "../errors/ValidationError";
 import { ReserveService } from "../services/ReserveService";
 
 export class ReserveController {
-  private reserveService = new ReserveService();
+  constructor(private reserveService: ReserveService){}
 
   async createReserve(req: Request, res: Response) {
     try {
