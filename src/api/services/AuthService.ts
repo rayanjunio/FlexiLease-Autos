@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { Repository } from "typeorm";
 import { User } from "../../database/entities/User";
-import { AppDataSource } from "../../database/connection";
 import { ValidationError } from "../errors/ValidationError";
 import jwt from "jsonwebtoken";
 import { config } from '../../config/dotenv';
@@ -12,15 +11,7 @@ interface UserLogin {
 }
 
 export class AuthService {
-  private userRepository!: Repository<User>;
-
-  constructor() {
-    this.initializeRepository();
-  }
-
-  private async initializeRepository() {
-    this.userRepository = AppDataSource.getRepository(User);
-  }
+  constructor(private userRepository: Repository<User>) {}
 
   async createAuth(email: string, password: string): Promise<string> {
     const regexEmail = new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i);
