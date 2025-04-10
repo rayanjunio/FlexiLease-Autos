@@ -1,17 +1,8 @@
 import { Repository } from "typeorm";
 import { Accessory } from "../../database/entities/Accessory";
-import { AppDataSource } from "../../database/connection";
 
 export class AccessoryService {
-  private accessoryRepository!: Repository<Accessory>;
-
-  constructor() {
-    this.initializeRepository();
-  }
-
-  private async initializeRepository() {
-    this.accessoryRepository = AppDataSource.getRepository(Accessory);
-  }
+  constructor(private accessoryRepository: Repository<Accessory>) {}
 
   async createAccessory(name: string): Promise<Accessory> {
     const accessory = new Accessory();
