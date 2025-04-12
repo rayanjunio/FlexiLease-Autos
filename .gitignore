@@ -3,3 +3,4 @@ src/database/db.sqlite
 src/database/db.sqlite
 dist/
 .env
+coverage/
