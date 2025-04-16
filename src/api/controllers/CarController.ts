@@ -66,8 +66,10 @@ export class CarController {
       const limit = parseInt(req.query.limit as string, 10) || 10;
       const offset = parseInt(req.query.offset as string, 10) || 0;
 
+      const { limit: _, offset: __, ...filters } = req.query;
+
       const { cars, total } = await this.carService.getAllCars(
-        req.query,
+        filters as Partial<Car>,
         limit,
         offset,
       );

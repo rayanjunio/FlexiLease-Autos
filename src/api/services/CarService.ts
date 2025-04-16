@@ -74,22 +74,12 @@ export class CarService {
     limit: number,
     offset: number,
   ): Promise<{ cars: Car[]; total: number }> {
-    const query = this.carRepository
-      .createQueryBuilder("car")
-      .leftJoinAndSelect("car.accessories", "accessory");
-
-    for (const parameter of Object.keys(parameters) as (keyof Partial<Car>)[]) {
-      if (parameters[parameter] !== undefined) {
-        query.andWhere(`car.${parameter} = :${parameter}`, {
-          [parameter]: parameters[parameter],
-        });
-      }
-    }
-
-    const [cars, total] = await query
-      .skip(offset)
-      .take(limit)
-      .getManyAndCount();
+    const [cars, total] = await this.carRepository.findAndCount({
+      where: parameters,
+      relations: ["accessories"],
+      skip: offset,
+      take: limit,
+    });
 
     return { cars, total };
   }
