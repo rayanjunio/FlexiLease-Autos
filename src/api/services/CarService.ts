@@ -3,7 +3,7 @@ import { Car } from "../../database/entities/Car";
 import { ValidationError } from "../errors/ValidationError";
 import { Accessory } from "../../database/entities/Accessory";
 import { AccessoryService } from "./AccessoryService";
-import { redisClient } from "../../config/redis";
+import { RedisClientType } from "redis";
 
 interface CarResponse {
   id: number;
@@ -18,7 +18,8 @@ interface CarResponse {
 export class CarService {
   constructor(private carRepository: Repository<Car>,
     private accessoryService: AccessoryService,
-    private accessoryRepository: Repository<Accessory>) {}
+    private accessoryRepository: Repository<Accessory>,
+    private redisClient: RedisClientType) {}
 
   async createCar(
     model: string,
@@ -87,7 +88,7 @@ export class CarService {
   public async getCarById(id: number): Promise<Car | undefined> {
     const cacheKey = `car:${id}`;
 
-    const cachedCar = await redisClient.get(cacheKey);
+    const cachedCar = await this.redisClient.get(cacheKey);
 
     if(cachedCar) {
       return JSON.parse(cachedCar);
@@ -103,7 +104,7 @@ export class CarService {
       throw new ValidationError(404, "Not Found", message);
     }
 
-    await redisClient.setEx(cacheKey, 300, JSON.stringify(car));
+    await this.redisClient.setEx(cacheKey, 300, JSON.stringify(car));
 
     return car;
   }
@@ -170,7 +171,7 @@ export class CarService {
       car.numberOfPassengers = carData.numberOfPassengers;
     }
 
-    redisClient.del(`car:${id}`);
+    this.redisClient.del(`car:${id}`);
 
     return await this.carRepository.save(car);
   }
@@ -209,7 +210,7 @@ export class CarService {
 
     const updatedCar = await this.carRepository.save(car);
 
-    redisClient.del(`car:${carId}`);
+    this.redisClient.del(`car:${carId}`);
 
     return {
       id: updatedCar.id,
@@ -237,7 +238,7 @@ export class CarService {
 
     await this.carRepository.remove(car);
 
-    redisClient.del(`car:${id}`);
+    this.redisClient.del(`car:${id}`);
   }
 
   private hasDuplicates(accessoriesArray?: Accessory[]): boolean {
