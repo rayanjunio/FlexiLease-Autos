@@ -4,23 +4,31 @@ import { CarService } from "../../../../src/api/services/CarService";
 import { Accessory } from "../../../../src/database/entities/Accessory";
 import { Car } from "../../../../src/database/entities/Car";
 import { ValidationError } from "../../../../src/api/errors/ValidationError";
+import { RedisClientType } from "redis";
 
 describe("Car Service", () => {
     let mockCarRepository: jest.Mocked<Repository<Car>>;
     let mockAccessoryRepository: jest.Mocked<Repository<Accessory>>;
     let accessoryService: AccessoryService;
     let carService: CarService;
+    let redisClientMock: jest.Mocked<RedisClientType>;
 
     beforeEach(() => {
         mockCarRepository = {
             save: jest.fn(),
             findAndCount: jest.fn(),
+            findOne: jest.fn(),
         } as unknown as jest.Mocked<Repository<Car>>;
+
+        redisClientMock = {
+            get: jest.fn(),
+            setEx: jest.fn(),
+        } as unknown as jest.Mocked<RedisClientType>;
 
         mockAccessoryRepository = {} as unknown as jest.Mocked<Repository<Accessory>>;
 
         accessoryService = new AccessoryService(mockAccessoryRepository);
-        carService = new CarService(mockCarRepository, accessoryService, mockAccessoryRepository);
+        carService = new CarService(mockCarRepository, accessoryService, mockAccessoryRepository, redisClientMock);
 
         jest.spyOn(accessoryService, "createAccessory").mockImplementation(async (name: string) => {
             return { id: 1, name } as Accessory;
@@ -262,5 +270,77 @@ describe("Car Service", () => {
                 take: LIMIT,
             });
         });
+    });
+
+    describe("getCarById", () => {
+        it("should return a car from redis cache", async () => {
+            const accessories = [
+                { name: "Air-conditioner" },
+                { name: "Eletric direction" },
+            ];
+    
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+    
+            redisClientMock.get.mockResolvedValue(JSON.stringify(car));
+    
+            const result: Car | undefined = await carService.getCarById(car.id);
+
+            expect(result).toEqual(car);
+            expect(mockCarRepository.findOne).toHaveBeenCalledTimes(0);
+        });
+
+        it("should return a car from database if not cached", async() => {
+            const accessories = [
+                { name: "Air-conditioner" },
+                { name: "Eletric direction" },
+            ];
+    
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+
+            redisClientMock.get.mockResolvedValue(null);
+            mockCarRepository.findOne.mockResolvedValue(car);
+
+            const result: Car | undefined = await carService.getCarById(car.id);
+
+            expect(result).toEqual(car);
+
+            expect(redisClientMock.get).toHaveBeenCalledTimes(1);
+            expect(mockCarRepository.findOne).toHaveBeenCalledTimes(1);
+
+            expect(redisClientMock.setEx).toHaveBeenCalledWith(
+                `car:${car.id}`,
+                300,
+                JSON.stringify(car),
+            );
+        });
+
+        it("should throw an error when car does not exist", async() => {
+            redisClientMock.get.mockResolvedValue(null);
+            mockCarRepository.findOne.mockResolvedValue(null);
+
+            await expect(carService.getCarById(0))
+                .rejects.toThrow(ValidationError);
+
+            expect(redisClientMock.get).toHaveBeenCalledTimes(1);
+            expect(redisClientMock.setEx).toHaveBeenCalledTimes(0);
+            expect(mockCarRepository.findOne).toHaveBeenCalledTimes(1);
+        });
+        
     });
 });
