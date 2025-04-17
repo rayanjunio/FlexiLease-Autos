@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { createQueryBuilder, Repository } from "typeorm";
 import { AccessoryService } from "../../../../src/api/services/AccessoryService";
 import { CarService } from "../../../../src/api/services/CarService";
 import { Accessory } from "../../../../src/database/entities/Accessory";
@@ -14,6 +14,7 @@ describe("Car Service", () => {
     beforeEach(() => {
         mockCarRepository = {
             save: jest.fn(),
+            findAndCount: jest.fn(),
         } as unknown as jest.Mocked<Repository<Car>>;
 
         mockAccessoryRepository = {} as unknown as jest.Mocked<Repository<Accessory>>;
@@ -151,5 +152,111 @@ describe("Car Service", () => {
             )
         ).rejects.toThrow(ValidationError);
         expect(mockCarRepository.save).toHaveBeenCalledTimes(0);
+    });
+
+    it("should return all the saved cars without filters", async() => {
+        const accessories = [
+            { name: "Air-conditioner" },
+            { name: "Eletric direction" },
+        ];
+
+        const firstCar: Car = Object.assign(new Car(), {
+            id: 1,
+            model: "Toyota Corolla",
+            color: "Black", 
+            year: 2020,
+            valuePerDay: 200,
+            numberOfPassengers: 5, 
+            accessories: accessories,
+        });
+
+        const secondCar: Car = Object.assign(new Car(), {
+            id: 2,
+            model: "Hyundai Creta",
+            color: "White", 
+            year: 2021,
+            valuePerDay: 250,
+            numberOfPassengers: 5, 
+            accessories: accessories,
+        });
+
+        const TOTAL_CARS: number = 2;
+        const EMPTY_FILTER: Partial<Car> = {};
+        const LIMIT: number = 10;
+        const OFFSET: number = 0;
+
+         mockCarRepository.findAndCount.mockResolvedValue([
+            [firstCar, secondCar], TOTAL_CARS,
+        ]);
+
+        const result = await carService.getAllCars(EMPTY_FILTER, LIMIT, OFFSET);
+
+        expect(result).toEqual({
+            cars: [firstCar, secondCar],
+            total: TOTAL_CARS,
+        });
+
+        expect(mockCarRepository.findAndCount).toHaveBeenCalledTimes(1);
+        expect(result.cars).toHaveLength(2);
+
+        expect(mockCarRepository.findAndCount).toHaveBeenCalledWith({
+            where: EMPTY_FILTER,
+            relations: ["accessories"],
+            skip: OFFSET,
+            take: LIMIT,
+        });
+    });
+
+    it("should return all the saved cars with filters", async() => {
+        const accessories = [
+            { name: "Air-conditioner" },
+            { name: "Eletric direction" },
+        ];
+
+        const firstCar: Car = Object.assign(new Car(), {
+            id: 1,
+            model: "Toyota Corolla",
+            color: "Black", 
+            year: 2020,
+            valuePerDay: 200,
+            numberOfPassengers: 5, 
+            accessories: accessories,
+        });
+
+        const secondCar: Car = Object.assign(new Car(), {
+            id: 2,
+            model: "Hyundai Creta",
+            color: "White", 
+            year: 2021,
+            valuePerDay: 250,
+            numberOfPassengers: 5, 
+            accessories: accessories,
+        });
+
+        const TOTAL_CARS: number = 1;
+        const FILTERS: Partial<Car> = { color: "Black" };
+        const LIMIT: number = 10;
+        const OFFSET: number = 0;
+
+        mockCarRepository.findAndCount.mockResolvedValue([
+            [firstCar], TOTAL_CARS],
+        );
+
+        const result = await carService.getAllCars(FILTERS,LIMIT, OFFSET);
+
+        expect(result).toEqual({
+            cars: [firstCar],
+            total: TOTAL_CARS,
+        });
+
+        expect(mockCarRepository.findAndCount).toHaveBeenCalledTimes(1);
+        expect(result.cars).toHaveLength(1);
+
+        expect(mockCarRepository.findAndCount).toHaveBeenCalledWith({
+            where: FILTERS,
+            relations: ["accessories"],
+            skip: OFFSET,
+            take: LIMIT,
+        });
     });
 });
