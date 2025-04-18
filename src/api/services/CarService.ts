@@ -43,7 +43,7 @@ export class CarService {
       throw new ValidationError(400, "Bad Request", message);
     }
 
-    if (this.hasDuplicates(accessories)) {
+    if (this.accessoryService.hasDuplicates(accessories)) {
       throw new ValidationError(
         400,
         "Bad Request",
@@ -137,33 +137,9 @@ export class CarService {
     if (carData.valuePerDay) car.valuePerDay = carData.valuePerDay;
 
     if (Array.isArray(carData.accessories)) {
-      if (this.hasDuplicates(carData.accessories)) {
-        throw new ValidationError(
-          400,
-          "Bad Request",
-          "Not allowed duplicated accessories",
-        );
-      }
-      const existingAccessoryIds = car.accessories.map(
-        (accessory) => accessory.id,
-      );
-      const newAccessories = carData.accessories.filter(
-        (accessory) => !existingAccessoryIds.includes(accessory.id),
-      );
-
-      for (const accessoryData of newAccessories) {
-        const accessory = await this.accessoryService.createAccessory(
-          accessoryData.name,
-        );
-        car.accessories.push(accessory);
-      }
-
-      const accessoriesToRemove = existingAccessoryIds.filter(
-        (id) => !carData.accessories?.some((a) => a.id === id),
-      );
-
-      car.accessories = car.accessories.filter(
-        (accessory) => !accessoriesToRemove.includes(accessory.id),
+      car.accessories = await this.accessoryService.synchronizeAccessories(
+        car.accessories,
+        carData.accessories,
       );
     }
 
@@ -239,14 +215,5 @@ export class CarService {
     await this.carRepository.remove(car);
 
     this.redisClient.del(`car:${id}`);
-  }
-
-  private hasDuplicates(accessoriesArray?: Accessory[]): boolean {
-    if (!Array.isArray(accessoriesArray)) {
-      return false;
-    }
-
-    const accessoryNames = accessoriesArray.map((accessory) => accessory.name);
-    return new Set(accessoryNames).size !== accessoryNames.length;
   }
 }
