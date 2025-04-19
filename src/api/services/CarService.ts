@@ -166,23 +166,12 @@ export class CarService {
       throw new ValidationError(404, "Not Found", message);
     }
 
-    const existingAccessory = car.accessories.find(
-      (a) => a.name === accessoryData.name,
-    );
+    const newAccessory = await this.accessoryService.handleAccessoryUpdate(accessoryData, car);
 
-    if (existingAccessory) {
-      await this.accessoryRepository.delete(existingAccessory.id);
-      car.accessories = car.accessories.filter(
-        (accessory) => accessory !== existingAccessory,
-      );
-    } else {
-      const newAccessory = new Accessory();
-      newAccessory.name = accessoryData.name;
-      newAccessory.car = car;
-
-      await this.accessoryRepository.save(newAccessory);
+    if (newAccessory) 
       car.accessories.push(newAccessory);
-    }
+    else 
+      car.accessories = car.accessories.filter(accessory => !accessory.name.includes(accessoryData.name));
 
     const updatedCar = await this.carRepository.save(car);
 
