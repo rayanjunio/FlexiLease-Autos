@@ -44,6 +44,13 @@ describe("Car Service", () => {
                 } as Accessory)),
             ];
         });
+
+        jest.spyOn(accessoryService, "handleAccessoryUpdate").mockImplementation(async (newAccessory: { name: string }, car: Car) => {
+            return {
+                id: 1,
+                name: newAccessory.name,
+            } as Accessory;
+        });
     });
 
     describe("createCar", () => {
@@ -437,6 +444,75 @@ describe("Car Service", () => {
 
             expect(accessoryService.synchronizeAccessories).toHaveBeenCalledTimes(0);
             expect(mockCarRepository.save).toHaveBeenCalledTimes(0);
+            expect(redisClientMock.del).toHaveBeenCalledTimes(0);
+        });
+    });
+
+    describe("updateAccessory", () => {
+        it("should update an accessory from a car", async() => {
+            const accessories = [
+                { id: 1, name: "Air-conditioner" },
+                { id: 2, name: "Eletric direction" },
+            ];
+
+            const accessoryToUpdate = { id: 3, name: "Parking sensor" };
+
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+
+            const updatedCar: Car = Object.assign(new Car(), {
+                id: car.id,
+                model: car.model,
+                color: car.color,
+                year: car.year,
+                valuePerDay: car.valuePerDay,
+                numberOfPassengers: car.numberOfPassengers,
+                accessories: [...car.accessories, accessoryToUpdate],
+            });
+
+            mockCarRepository.findOne.mockResolvedValue(car);
+            mockCarRepository.save.mockResolvedValue(updatedCar);
+
+            redisClientMock.del.mockResolvedValue(0);
+
+            const result = await carService.updateAccessory(car.id, accessoryToUpdate);
+
+            expect(result.id).toEqual(updatedCar.id);
+            expect(result.model).toEqual(updatedCar.model);
+            expect(result.color).toEqual(updatedCar.color);
+            expect(result.year).toEqual(updatedCar.year);
+            expect(result.valuePerDay).toEqual(updatedCar.valuePerDay);
+            expect(result.numberOfPassengers).toEqual(updatedCar.numberOfPassengers);
+            
+            expect(result.accessories).toEqual(updatedCar.accessories.map((accessory) => ({
+                name: accessory.name,
+            })));
+
+            expect(mockCarRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(mockCarRepository.save).toHaveBeenCalledTimes(1);
+
+            expect(accessoryService.handleAccessoryUpdate).toHaveBeenCalledTimes(1);
+
+            expect(redisClientMock.del).toHaveBeenCalledTimes(1);
+        });
+
+        it("should throw an error when car does not exist", async() => {
+            mockCarRepository.findOne.mockResolvedValue(null);
+
+            await expect(carService.updateAccessory(1, { name: "" })
+            ).rejects.toThrow(ValidationError);
+
+            expect(accessoryService.handleAccessoryUpdate).toHaveBeenCalledTimes(0);
+
+            expect(mockCarRepository.save).toHaveBeenCalledTimes(0);
+
             expect(redisClientMock.del).toHaveBeenCalledTimes(0);
         });
     });
