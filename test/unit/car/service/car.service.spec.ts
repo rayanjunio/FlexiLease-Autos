@@ -18,6 +18,7 @@ describe("Car Service", () => {
             save: jest.fn(),
             findAndCount: jest.fn(),
             findOne: jest.fn(),
+            remove: jest.fn(),
         } as unknown as jest.Mocked<Repository<Car>>;
 
         redisClientMock = {
@@ -512,6 +513,48 @@ describe("Car Service", () => {
             expect(accessoryService.handleAccessoryUpdate).toHaveBeenCalledTimes(0);
 
             expect(mockCarRepository.save).toHaveBeenCalledTimes(0);
+
+            expect(redisClientMock.del).toHaveBeenCalledTimes(0);
+        });
+    });
+
+    describe("deleteCar", () => {
+        it("should delete a car", async() => {
+            const accessories = [
+                { id: 1, name: "Air-conditioner" },
+                { id: 2, name: "Eletric direction" },
+            ];
+
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+
+            mockCarRepository.findOne.mockResolvedValue(car);
+            mockCarRepository.remove.mockResolvedValue(car);
+
+            redisClientMock.del.mockResolvedValue(0);
+
+            await carService.deleteCar(car.id);
+
+            expect(mockCarRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(mockCarRepository.remove).toHaveBeenCalledTimes(1);
+
+            expect(redisClientMock.del).toHaveBeenCalledTimes(1);
+        });
+
+        it("should throw an error when car does not exist", async() => {
+            mockCarRepository.findOne.mockResolvedValue(null);
+
+            await expect(carService.deleteCar(1)).rejects.toThrow(ValidationError);
+
+            expect(mockCarRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(mockCarRepository.remove).toHaveBeenCalledTimes(0);
 
             expect(redisClientMock.del).toHaveBeenCalledTimes(0);
         });
