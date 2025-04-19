@@ -23,6 +23,7 @@ describe("Car Service", () => {
         redisClientMock = {
             get: jest.fn(),
             setEx: jest.fn(),
+            del: jest.fn(),
         } as unknown as jest.Mocked<RedisClientType>;
 
         mockAccessoryRepository = {} as unknown as jest.Mocked<Repository<Accessory>>;
@@ -33,13 +34,23 @@ describe("Car Service", () => {
         jest.spyOn(accessoryService, "createAccessory").mockImplementation(async (name: string) => {
             return { id: 1, name } as Accessory;
         }); 
+
+        jest.spyOn(accessoryService, "synchronizeAccessories").mockImplementation(async (currentAccessories: Accessory[], newAccessories: Partial<Accessory>[]) => {
+            return [
+                ...currentAccessories,
+                ...newAccessories.map((acc, i) => ({
+                    id: currentAccessories.length + i + 1,
+                    name: acc.name,
+                } as Accessory)),
+            ];
+        });
     });
 
     describe("createCar", () => {
         it("should return the created car", async() => {
             const accessories = [
-                { name: "Air-conditioner" },
-                { name: "Eletric direction" },
+                { id: 1, name: "Air-conditioner" },
+                { id: 2, name: "Eletric direction" },
             ];
 
             const car: Car = Object.assign(new Car(), {
@@ -340,7 +351,93 @@ describe("Car Service", () => {
             expect(redisClientMock.get).toHaveBeenCalledTimes(1);
             expect(redisClientMock.setEx).toHaveBeenCalledTimes(0);
             expect(mockCarRepository.findOne).toHaveBeenCalledTimes(1);
+        });  
+    });
+
+    describe("updateCar", () => {
+        it("should update an existent car", async() => {
+            const accessories = [
+                { name: "Air-conditioner" },
+                { name: "Eletric direction" },
+            ];
+
+            const updatedAccessories = [...accessories, { name: "Parking sensor" }];
+    
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+
+            const updatedcar: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Hiunday Creta",
+                color: "White", 
+                year: 2018,
+                valuePerDay: 190,
+                numberOfPassengers: 6, 
+                accessories: updatedAccessories,
+            });
+
+            const VALUES_TO_MODIFY: Partial<Car> = { model: "Hiunday Creta", color: "White", year: 2018, valuePerDay: 190, numberOfPassengers: 6 };
+
+            mockCarRepository.findOne.mockResolvedValue(car);
+            mockCarRepository.save.mockResolvedValue(updatedcar);
+
+            redisClientMock.del.mockResolvedValue(0);
+
+            const result: Car | undefined = await carService.updateCar(car.id, VALUES_TO_MODIFY);
+
+            expect(result).toEqual(updatedcar);
+
+            expect(result?.accessories).toHaveLength(updatedAccessories.length);
+
+            expect(mockCarRepository.save).toHaveBeenCalledTimes(1);
+            expect(redisClientMock.del).toHaveBeenCalledTimes(1);
+        }); 
+
+        it("should throw an error when car does not exist", async() => {
+            mockCarRepository.findOne.mockResolvedValue(null);
+
+            await expect(carService.updateCar(1, {}))
+                .rejects.toThrow(ValidationError);
+    
+                expect(mockCarRepository.save).toHaveBeenCalledTimes(0);
+                expect(redisClientMock.del).toHaveBeenCalledTimes(0);
         });
-        
+
+        it("should throw an error when car year is invalid", async() => {
+            const accessories = [
+                { name: "Air-conditioner" },
+                { name: "Eletric direction" },
+            ];
+    
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+
+            const INVALID_YEAR: Partial<Car> = { year: 1950 };
+
+            mockCarRepository.findOne.mockResolvedValue(car);
+
+            await expect(carService.updateCar(
+                car.id,
+                INVALID_YEAR,
+            )).rejects.toThrow(ValidationError);
+
+            expect(accessoryService.synchronizeAccessories).toHaveBeenCalledTimes(0);
+            expect(mockCarRepository.save).toHaveBeenCalledTimes(0);
+            expect(redisClientMock.del).toHaveBeenCalledTimes(0);
+        });
     });
 });
