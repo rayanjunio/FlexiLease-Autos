@@ -58,14 +58,12 @@ export class CarService {
     newCar.valuePerDay = valuePerDay;
     newCar.numberOfPassengers = numberOfPassengers;
 
-    newCar.accessories = await Promise.all(
-      accessories.map(async (accessoryData) => {
+    newCar.accessories = accessories.map((accessoryData) => {
         const accessory = new Accessory();
         accessory.name = accessoryData.name;
         accessory.car = newCar;
-        return await this.accessoryService.createAccessory(accessory.name);
-      }),
-    );
+        return accessory;
+      });
 
     return await this.carRepository.save(newCar);
   }

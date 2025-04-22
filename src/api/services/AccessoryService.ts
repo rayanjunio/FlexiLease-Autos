@@ -67,11 +67,17 @@ export class AccessoryService {
       .filter((name): name is string => typeof name === "string");
 
     const namesToAdd: string[] = newNames.filter(name => !currentNames.includes(name));
-    const namesToKeep: string[] = newNames;
 
     const updatedAccessories: Accessory[] = currentAccessories.filter(
-      accessory => namesToKeep.includes(accessory.name),
+      accessory => !newNames.includes(accessory.name),
     );
+
+    const accessoriesToDelete: Accessory[] = currentAccessories.filter(
+      accessory => newNames.includes(accessory.name),
+    );
+
+    for(const acc of accessoriesToDelete) 
+      await this.deleteAccessory(acc.id);
 
     for(const name of namesToAdd) {
       const accessory = await this.createAccessory(name);
