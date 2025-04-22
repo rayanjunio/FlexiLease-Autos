@@ -7,6 +7,10 @@ export class AccessoryService {
   constructor(private accessoryRepository: Repository<Accessory>) {}
 
   async createAccessory(name: string): Promise<Accessory> {
+    if(!name || name.trim() === "") {
+      const message: string = "accessory can't have an empty name";
+      throw new ValidationError(400, "Bad Request", message);
+    }
     const accessory = new Accessory();
     accessory.name = name;
 
