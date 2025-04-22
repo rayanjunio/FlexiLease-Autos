@@ -26,6 +26,9 @@ export class Car {
   @OneToMany(() => Reserve, (reserve) => reserve.carId)
   reserves!: Reserve[];
 
-  @OneToMany(() => Accessory, (accessory) => accessory.car, { cascade: true })
+  @OneToMany(() => Accessory, (accessory) => accessory.car, {
+    cascade: true,
+    orphanedRowAction: "delete",  
+  })
   accessories!: Accessory[];
 }

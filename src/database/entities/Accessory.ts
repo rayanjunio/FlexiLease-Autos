@@ -15,6 +15,8 @@ export class Accessory {
   @Column()
   name!: string;
 
-  @ManyToOne(() => Car, (car) => car.accessories)
+  @ManyToOne(() => Car, (car) => car.accessories, {
+    onDelete: "CASCADE",
+  })
   car!: Car;
 }
