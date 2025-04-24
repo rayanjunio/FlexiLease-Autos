@@ -17,10 +17,6 @@ export class AccessoryService {
     return await this.accessoryRepository.save(accessory);
   }
 
-  async getAccessoryById(id: number): Promise<Accessory | null> {
-    return await this.accessoryRepository.findOne({ where: { id } });
-  }
-
   async handleAccessoryUpdate(
     newAccessory: { name: string },
     car: Car,
