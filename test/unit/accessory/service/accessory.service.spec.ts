@@ -173,4 +173,37 @@ describe("Accessory Service", () => {
             expect(accessoryService.hasDuplicates).toHaveBeenCalledWith(newAccessories);
         });
     });
+
+    describe("hasDuplicates", () => {
+        it("should return false when there are no duplicated accessories", async() => {
+            const accessories: Partial<Accessory>[] = [
+                { name: "Air-conditioner" },
+                { name: "Turbo mode" },
+                { name: "Eletric direction" },
+            ];
+
+            const result: boolean = await accessoryService.hasDuplicates(accessories);
+
+            expect(result).toBeFalsy();
+        });
+
+        it("should return true when there are duplicated accessories", async() => {
+            const accessories: Partial<Accessory>[] = [
+                { name: "Air-conditioner" },
+                { name: "Air-conditioner" },
+            ];
+
+            const result: boolean = await accessoryService.hasDuplicates(accessories);
+
+            expect(result).toBeTruthy();
+        });
+
+        it("should return false when input is not an array", async() => {
+            const accessory = {} as Accessory[];
+
+            const result: boolean = await accessoryService.hasDuplicates(accessory);
+
+            expect(result).toBeFalsy();
+        });
+    });
 });
