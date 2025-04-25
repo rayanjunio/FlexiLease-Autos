@@ -119,4 +119,58 @@ describe("Accessory Service", () => {
             expect(mockAccessoryRepository.save).toHaveBeenCalledTimes(0);
         });
     });
+
+    describe("synchronizeAccessories", () => {
+        it("should remove the accessory that is passed twice and return the updated accessories", async() => {
+            const accessories: Accessory[] = [
+                { id: 1, name: "Air-conditioner" },
+            ] as Accessory[];
+
+            const car: Car = Object.assign(new Car(), {
+                id: 1,
+                model: "Toyota Corolla",
+                color: "Black", 
+                year: 2020,
+                valuePerDay: 200,
+                numberOfPassengers: 5, 
+                accessories: accessories,
+            });
+
+            const newAccessories: Partial<Accessory>[] = [
+                { name: "Air-conditioner" },
+                { name: "Turbo mode" },
+            ];
+
+            jest.spyOn(accessoryService, "deleteAccessory").mockResolvedValue();
+
+            jest.spyOn(accessoryService, "createAccessory").mockImplementation(async(name: string) => {
+                return { id: 2, name } as Accessory;
+            });
+
+            const result = await accessoryService.synchronizeAccessories(car.accessories, newAccessories);
+
+            expect(result).toEqual([
+                { id: 2, name: "Turbo mode" },
+            ]);
+        });
+
+        it("should throw an error for duplicated accessories", async() => {
+            const currentAccessories: Accessory[] = [];
+
+            const newAccessories: Partial<Accessory>[] = [
+                { name: "Air-conditioner" },
+                { name: "Air-conditioner" },
+            ];
+
+            jest.spyOn(accessoryService, "hasDuplicates")
+                .mockImplementation((accessories?: Partial<Accessory>[]) => {
+                return true;
+            });
+
+            await expect(accessoryService.synchronizeAccessories(currentAccessories, newAccessories))
+                .rejects.toThrow(ValidationError);
+
+            expect(accessoryService.hasDuplicates).toHaveBeenCalledWith(newAccessories);
+        });
+    });
 });
