@@ -5,6 +5,7 @@ import { User } from "../../database/entities/User";
 import { ValidationError } from "../errors/ValidationError";
 import { consumeApi } from "../utils/helpers/apiConsumer";
 import { Reserve } from "../../database/entities/Reserve";
+import { isEmailValid } from "../utils/validators/validateEmail";
 
 interface UserResponse {
   id: number;
@@ -59,12 +60,6 @@ export class UserService {
     const cpfRegistered = await this.userRepository.findOne({ where: { cpf } });
     if (cpfRegistered) {
       const message = "Typed CPF already is registered.";
-      throw new ValidationError(400, "Bad Request", message);
-    }
-
-    const regexEmail = new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i);
-    if (!regexEmail.test(email)) {
-      const message = "Typed email is not valid";
       throw new ValidationError(400, "Bad Request", message);
     }
 
@@ -186,11 +181,8 @@ export class UserService {
     }
 
     if (userData.email) {
-      const regexEmail = new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i);
 
-      let matchEmail = regexEmail.test(userData.email);
-
-      if (!matchEmail) {
+      if(!isEmailValid(userData.email)) {
         const message = "Typed email is not valid";
         throw new ValidationError(400, "Bad Request", message);
       }
