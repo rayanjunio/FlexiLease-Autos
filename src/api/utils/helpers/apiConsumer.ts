@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ValidationError } from "../errors/ValidationError";
+import { ValidationError } from "../../errors/ValidationError";
 
 export async function consumeApi(cep: string) {
   if (!/^\d{8}$/.test(cep)) {

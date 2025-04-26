@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
 import { UserService } from "../services/UserService";
-import { verifyUserCompatibility } from "../utils/authorization";
+import { verifyUserCompatibility } from "../utils/validators/authorization";
 
 export class UserController {
   constructor(private userService: UserService){}

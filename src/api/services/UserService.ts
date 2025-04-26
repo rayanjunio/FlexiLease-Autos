@@ -3,7 +3,7 @@ import { cpf as cpfValidator } from "cpf-cnpj-validator";
 import bcrypt from "bcrypt";
 import { User } from "../../database/entities/User";
 import { ValidationError } from "../errors/ValidationError";
-import { consumeApi } from "../utils/apiConsumer";
+import { consumeApi } from "../utils/helpers/apiConsumer";
 import { Reserve } from "../../database/entities/Reserve";
 
 interface UserResponse {

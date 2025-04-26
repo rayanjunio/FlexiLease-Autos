@@ -3,7 +3,7 @@ import { Reserve } from "../../database/entities/Reserve";
 import { Car } from "../../database/entities/Car";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
-import { verifyUserCompatibility } from "../utils/authorization";
+import { verifyUserCompatibility } from "../utils/validators/authorization";
 
 interface ReserveResponse {
   id: number;

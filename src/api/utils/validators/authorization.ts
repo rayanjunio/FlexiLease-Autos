@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors/ValidationError";
+import { ValidationError } from "../../errors/ValidationError";
 
 export function verifyUserCompatibility(userId: number, authenticatedUserId: number) {
     if (userId !== authenticatedUserId) {
