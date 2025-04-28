@@ -6,6 +6,7 @@ import { User } from "../../database/entities/User";
 import { verifyUserCompatibility } from "../utils/validators/authorization";
 import { ensureValidDate } from "../utils/validators/validateDate";
 import { formatDate } from "../utils/formatters/dateFormatter";
+import { calculateAge } from "../utils/helpers/calculateAge";
 
 interface ReserveResponse {
   id: number;
@@ -41,7 +42,7 @@ export class ReserveService {
     }
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user || this.calculateAge(user.birth) < 18) {
+    if (!user || calculateAge(user.birth) < 18) {
       const message = "User must be over 18 years old to make a reservation.";
       throw new ValidationError(400, "Bad Request", message);
     }
@@ -286,18 +287,5 @@ export class ReserveService {
     verifyUserCompatibility(reserve.userId.id, userId);
 
     await this.reserveRepository.delete(id);
-  }
-
-  private calculateAge(birthDate: Date): number {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-    return age;
   }
 }

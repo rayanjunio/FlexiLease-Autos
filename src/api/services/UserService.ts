@@ -8,6 +8,7 @@ import { Reserve } from "../../database/entities/Reserve";
 import { isEmailValid } from "../utils/validators/validateEmail";
 import { ensureValidDate } from "../utils/validators/validateDate";
 import { formatDate } from "../utils/formatters/dateFormatter";
+import { calculateAge } from "../utils/helpers/calculateAge";
 
 interface UserResponse {
   id: number;
@@ -37,22 +38,6 @@ export class UserService {
     email: string,
     password: string,
   ): Promise<UserResponse> {
-    const now = new Date();
-
-    birth = ensureValidDate(birth);
-
-    let age = now.getFullYear() - birth.getFullYear();
-    const monthDifference = now.getMonth() - birth.getMonth();
-
-    if (
-      monthDifference < 0 ||
-      (monthDifference === 0 && now.getDate() < birth.getDate())
-    ) {
-      age--;
-    }
-
-    const qualified = age >= 18;
-
     const cpfValid = cpfValidator.isValid(cpf);
     if (!cpfValid) {
       const message = "Typed CPF is invalid.";
@@ -77,6 +62,12 @@ export class UserService {
       const message = "Password must have at least 6 characters";
       throw new ValidationError(400, "Bad Request", message);
     }
+
+    birth = ensureValidDate(birth);
+
+    let age: number = calculateAge(birth);
+
+    const qualified = age >= 18;
 
     const address = await consumeApi(cep);
     const { bairro, logradouro, complemento, localidade, uf } = address;
@@ -213,21 +204,13 @@ export class UserService {
     }
 
     if (userData.birth) {
-      const birthDate = ensureValidDate(userData.birth);
+      const newBirth: Date = ensureValidDate(userData.birth);
 
-      const now = new Date();
-      let age = now.getFullYear() - birthDate.getFullYear();
-      const monthDifference = now.getMonth() - birthDate.getMonth();
-
-      if (
-        monthDifference < 0 ||
-        (monthDifference === 0 && now.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
+      let age: number = calculateAge(newBirth);
 
       user.qualified = age >= 18;
-      user.birth = birthDate;
+      
+      user.birth = newBirth;
     }
 
     if (userData.password) {
