@@ -4,6 +4,8 @@ import { Car } from "../../database/entities/Car";
 import { ValidationError } from "../errors/ValidationError";
 import { User } from "../../database/entities/User";
 import { verifyUserCompatibility } from "../utils/validators/authorization";
+import { ensureValidDate } from "../utils/validators/validateDate";
+import { formatDate } from "../utils/formatters/dateFormatter";
 
 interface ReserveResponse {
   id: number;
@@ -44,8 +46,8 @@ export class ReserveService {
       throw new ValidationError(400, "Bad Request", message);
     }
 
-    startDate = this.ensureValidDate(startDate);
-    endDate = this.ensureValidDate(endDate);
+    startDate = ensureValidDate(startDate);
+    endDate = ensureValidDate(endDate);
 
     if (endDate.getTime() <= startDate.getTime()) {
       const message = "End date must be after start date.";
@@ -143,8 +145,8 @@ export class ReserveService {
     return {
       reserves: reserves.map((reserve) => ({
         id: reserve.id,
-        startDate: this.formatDate(reserve.startDate),
-        endDate: this.formatDate(reserve.endDate),
+        startDate: formatDate(reserve.startDate),
+        endDate: formatDate(reserve.endDate),
         finalValue: reserve.finalValue,
         carId: reserve.carId.id,
         userId,
@@ -174,8 +176,8 @@ export class ReserveService {
 
     const formattedReserve = {
       id: reserve.id,
-      startDate: this.formatDate(reserve.startDate),
-      endDate: this.formatDate(reserve.endDate),
+      startDate: formatDate(reserve.startDate),
+      endDate: formatDate(reserve.endDate),
       finalValue: reserve.finalValue,
       userId: reserve.userId.id,
       carId: reserve.carId.id,
@@ -219,10 +221,10 @@ export class ReserveService {
       }
     }
 
-    const startDate = this.ensureValidDate(
+    const startDate = ensureValidDate(
       reserveData.startDate || reserve.startDate,
     );
-    const endDate = this.ensureValidDate(
+    const endDate = ensureValidDate(
       reserveData.endDate || reserve.endDate,
     );
 
@@ -257,8 +259,8 @@ export class ReserveService {
 
     const formattedReserve = this.reserveRepository.create({
       id: reserve.id,
-      startDate: this.formatDate(reserve.startDate),
-      endDate: this.formatDate(reserve.endDate),
+      startDate: formatDate(reserve.startDate),
+      endDate: formatDate(reserve.endDate),
       finalValue: reserve.finalValue,
       carId: { id: reserve.carId.id },
       userId: { id: reserve.userId.id },
@@ -284,44 +286,6 @@ export class ReserveService {
     verifyUserCompatibility(reserve.userId.id, userId);
 
     await this.reserveRepository.delete(id);
-  }
-
-  private ensureValidDate(date: string | Date): Date {
-    let parsedDate: Date;
-
-    if (typeof date === "string") {
-      const dateParts = date.split("/");
-      if (dateParts.length === 3) {
-        const day = parseInt(dateParts[0], 10);
-        const month = parseInt(dateParts[1], 10) - 1;
-        const year = parseInt(dateParts[2], 10);
-        parsedDate = new Date(year, month, day);
-      } else {
-        throw new ValidationError(
-          400,
-          "Bad Request",
-          "Date must be in the format dd/mm/yyyy.",
-        );
-      }
-    } else {
-      parsedDate = date;
-    }
-
-    if (!(parsedDate instanceof Date) || isNaN(parsedDate.getTime())) {
-      throw new ValidationError(
-        400,
-        "Bad Request",
-        "Date must be a valid Date object.",
-      );
-    }
-    return parsedDate;
-  }
-
-  private formatDate(date: Date): string {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
   }
 
   private calculateAge(birthDate: Date): number {

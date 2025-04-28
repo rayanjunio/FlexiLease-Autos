@@ -6,6 +6,8 @@ import { ValidationError } from "../errors/ValidationError";
 import { consumeApi } from "../utils/helpers/apiConsumer";
 import { Reserve } from "../../database/entities/Reserve";
 import { isEmailValid } from "../utils/validators/validateEmail";
+import { ensureValidDate } from "../utils/validators/validateDate";
+import { formatDate } from "../utils/formatters/dateFormatter";
 
 interface UserResponse {
   id: number;
@@ -37,7 +39,7 @@ export class UserService {
   ): Promise<UserResponse> {
     const now = new Date();
 
-    birth = this.ensureValidDate(birth);
+    birth = ensureValidDate(birth);
 
     let age = now.getFullYear() - birth.getFullYear();
     const monthDifference = now.getMonth() - birth.getMonth();
@@ -103,7 +105,7 @@ export class UserService {
       id: newUser.id,
       name,
       cpf,
-      birth: this.formatDate(newUser.birth),
+      birth: formatDate(newUser.birth),
       cep,
       email,
       qualified,
@@ -138,7 +140,7 @@ export class UserService {
       id: user.id,
       name: user.name,
       cpf: user.cpf,
-      birth: this.formatDate(user.birth),
+      birth: formatDate(user.birth),
       cep: user.cep,
       email: user.email,
       qualified: user.qualified,
@@ -211,7 +213,7 @@ export class UserService {
     }
 
     if (userData.birth) {
-      const birthDate = this.ensureValidDate(userData.birth);
+      const birthDate = ensureValidDate(userData.birth);
 
       const now = new Date();
       let age = now.getFullYear() - birthDate.getFullYear();
@@ -249,7 +251,7 @@ export class UserService {
       id: user.id,
       name: user.name,
       cpf: user.cpf,
-      birth: this.formatDate(user.birth),
+      birth: formatDate(user.birth),
       cep: user.cep,
       email: user.email,
       qualified: user.qualified,
@@ -274,30 +276,5 @@ export class UserService {
     await this.reserveRepository.delete({ userId: user });
 
     await this.userRepository.delete(id);
-  }
-
-  private ensureValidDate(birth: string | Date): Date {
-    if(typeof birth === "string") {
-      const [day, month, year] = birth.split("/").map(Number);
-      return new Date(Date.UTC(year, month-1, day+1));
-    }
-
-    if (!(birth instanceof Date) || isNaN(birth.getTime())) {
-      throw new ValidationError(
-        400,
-        "Bad Request",
-        "Birth date must be a valid Date object.",
-      );
-    }
-    
-    return birth;
-  }
-
-  private formatDate(date: Date): string {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
   }
 }
